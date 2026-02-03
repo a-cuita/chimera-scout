@@ -27,6 +27,7 @@
         .container {
             width: 100%;
             max-width: 375px;
+            margin: 0 auto;
             background: white;
             border-radius: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -212,21 +213,6 @@
         
         .status-value.tracking {
             color: #2D5F3F;
-        }
-        
-        /* Map Container */
-        .map-container {
-            width: 100%;
-            height: 250px;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 16px;
-            border: 2px solid #e5e7eb;
-        }
-        
-        #map {
-            width: 100%;
-            height: 100%;
         }
         
         /* Buttons */
@@ -590,10 +576,6 @@
                     </div>
                 </div>
                 
-                <div class="map-container">
-                    <div id="map"></div>
-                </div>
-                
                 <div class="photo-section">
                     <label for="photoInput" class="photo-btn">Take Photo</label>
                     <input type="file" id="photoInput" class="photo-input" accept="image/*" capture="environment">
@@ -671,7 +653,6 @@
         // CONFIGURATION
         // ==========================================
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxyZSKDx1Z_cVeyNTQCRNqiWIhX8Caju1dUdcCLByxxIEvzDQXaYJNzcZxfW1TeTlZT/exec';
-        const GOOGLE_MAPS_API_KEY = 'AIzaSyDJ787jqop1-1IC0XEEXKBCHORz71gcfp0';
         const GPS_INTERVAL = 10000; // 10 seconds
         
         // ==========================================
@@ -687,11 +668,7 @@
             durationTimer: null,
             gpsTimer: null,
             organization: '',
-            volunteerName: '',
-            map: null,
-            marker: null,
-            path: null,
-            pathCoordinates: []
+            volunteerName: ''
         };
         
         let bags = [];
@@ -755,21 +732,6 @@
             8: 'Severely littered area',
             9: 'Extreme litter accumulation',
             10: 'Worst ever seen, like a landfill'
-        };
-        
-        // ==========================================
-        // LOAD GOOGLE MAPS
-        // ==========================================
-        function loadGoogleMapsScript() {
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-        }
-        
-        window.initMap = function() {
-            console.log('Google Maps loaded successfully');
         };
         
         // ==========================================
@@ -859,34 +821,6 @@
             sessionState.gpsPoints = [];
             sessionState.photos = [];
             sessionState.totalDistance = 0;
-            sessionState.pathCoordinates = [];
-            
-            // Initialize map
-            if (!sessionState.map) {
-                sessionState.map = new google.maps.Map(document.getElementById('map'), {
-                    zoom: 18,
-                    center: {lat: 32.3777, lng: -86.3006}, // Default center
-                    mapTypeId: 'roadmap',
-                    disableDefaultUI: false,
-                    zoomControl: true,
-                    mapTypeControl: false,
-                    streetViewControl: false
-                });
-                
-                sessionState.marker = new google.maps.Marker({
-                    map: sessionState.map,
-                    title: 'Your Location'
-                });
-                
-                sessionState.path = new google.maps.Polyline({
-                    path: sessionState.pathCoordinates,
-                    geodesic: true,
-                    strokeColor: '#2D5F3F',
-                    strokeOpacity: 1.0,
-                    strokeWeight: 4,
-                    map: sessionState.map
-                });
-            }
             
             // Capture initial GPS point
             captureGPSPoint();
@@ -917,13 +851,6 @@
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude
                     };
-                    
-                    // Update map
-                    const latLng = {lat: point.latitude, lng: point.longitude};
-                    sessionState.marker.setPosition(latLng);
-                    sessionState.map.setCenter(latLng);
-                    sessionState.pathCoordinates.push(latLng);
-                    sessionState.path.setPath(sessionState.pathCoordinates);
                     
                     // Calculate distance
                     if (sessionState.gpsPoints.length > 0) {
@@ -1140,26 +1067,14 @@
         });
         
         function resetSession() {
-            sessionState = {
-                sessionId: null,
-                isTracking: false,
-                startTime: null,
-                gpsPoints: [],
-                photos: [],
-                totalDistance: 0,
-                durationTimer: null,
-                gpsTimer: null,
-                organization: sessionState.organization,
-                volunteerName: sessionState.volunteerName,
-                map: sessionState.map,
-                marker: sessionState.marker,
-                path: sessionState.path,
-                pathCoordinates: []
-            };
-            
-            if (sessionState.path) {
-                sessionState.path.setPath([]);
-            }
+            sessionState.sessionId = null;
+            sessionState.isTracking = false;
+            sessionState.startTime = null;
+            sessionState.gpsPoints = [];
+            sessionState.photos = [];
+            sessionState.totalDistance = 0;
+            sessionState.durationTimer = null;
+            sessionState.gpsTimer = null;
             
             scoutCheck.checked = false;
             collectCheck.checked = false;
@@ -1180,13 +1095,6 @@
             
             updateFormVisibility();
         }
-        
-        // ==========================================
-        // INITIALIZE
-        // ==========================================
-        window.addEventListener('load', function() {
-            loadGoogleMapsScript();
-        });
     </script>
 </body>
 </html>
