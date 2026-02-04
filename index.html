@@ -420,6 +420,46 @@
             font-size: 14px;
             color: #6b7280;
         }
+/* Scout Notes */
+.notes-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1f2937;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    resize: vertical;
+    min-height: 80px;
+    margin-top: 16px;
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: #2D5F3F;
+}
+
+.notes-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+.notes-helper {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.char-counter {
+    font-size: 11px;
+    color: #9ca3af;
+    text-align: right;
+    margin-top: 4px;
+}
         
         /* Collection Bags */
         .bag-entry {
@@ -621,18 +661,27 @@
                 </div>
                 
                 <!-- Scout Form -->
-                <div class="form-section" id="scoutForm">
-                    <h3>Scout Report</h3>
-                    <div class="rating-scale">
-                        <span>0 - Clean</span>
-                        <span>10 - Worst Ever</span>
-                    </div>
-                    <div class="slider-container">
-                        <input type="range" min="0" max="10" value="5" class="slider" id="litterRating">
-                    </div>
-                    <div class="rating-value" id="ratingValue">5</div>
-                    <div class="rating-description" id="ratingDescription">Moderate litter density</div>
-                </div>
+<div class="form-section" id="scoutForm">
+    <h3>Scout Report</h3>
+    <div class="rating-scale">
+        <span>0 - Clean</span>
+        <span>10 - Worst Ever</span>
+    </div>
+    <div class="slider-container">
+        <input type="range" min="0" max="10" value="5" class="slider" id="litterRating">
+    </div>
+    <div class="rating-value" id="ratingValue">5</div>
+    <div class="rating-description" id="ratingDescription">Moderate litter density</div>
+    
+    <label class="notes-label">Notes (Optional)</label>
+    <textarea 
+        id="scoutNotes" 
+        class="notes-textarea" 
+        maxlength="500" 
+        placeholder="Describe location, landmarks, how to find this spot... For testing: use 'GF:' prefix for special codes"></textarea>
+    <div class="char-counter"><span id="notesCounter">0</span> / 500 characters</div>
+    <div class="notes-helper">Help others find and validate this location</div>
+</div>
                 
                 <!-- Collection Form -->
                 <div class="form-section" id="collectionForm">
@@ -967,7 +1016,17 @@
             ratingValue.textContent = value;
             ratingDescription.textContent = descriptions[value];
         });
-        
+
+// ==========================================
+// SCOUT NOTES CHARACTER COUNTER
+// ==========================================
+const scoutNotes = document.getElementById('scoutNotes');
+const notesCounter = document.getElementById('notesCounter');
+
+scoutNotes.addEventListener('input', function() {
+    notesCounter.textContent = this.value.length;
+});        
+
         // ==========================================
         // BAG MANAGEMENT
         // ==========================================
@@ -1032,8 +1091,9 @@
                 duration: totalSeconds,
                 distance: sessionState.totalDistance,
                 scoutData: scoutCheck.checked ? {
-                    rating: parseInt(litterRating.value)
-                } : null,
+        rating: parseInt(litterRating.value),
+        notes: scoutNotes.value.trim() || null
+    } : null,
                 collectionData: collectCheck.checked ? {
                     bags: bagData,
                     totalWeight: bagData.reduce((sum, w) => sum + w, 0)
@@ -1085,7 +1145,8 @@
             litterRating.value = 5;
             ratingValue.textContent = '5';
             ratingDescription.textContent = descriptions[5];
-            
+            scoutNotes.value = '';
+    notesCounter.textContent = '0';
             bagsContainer.innerHTML = '';
             bags = [];
             bagCounter = 0;
