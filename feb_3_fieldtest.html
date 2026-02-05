@@ -1,276 +1,316 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CHIMERA - Predicted Litter Density Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHIMERA Field Test Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        #map { height: 100vh; width: 100%; }
-        .info-panel {
-            position: absolute;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow: hidden;
+        }
+        
+        #map {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .back-button {
+            position: fixed;
             top: 20px;
-            right: 20px;
-            background: white;
-            padding: 18px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            left: 20px;
             z-index: 1000;
-            max-width: 320px;
-        }
-        .panel-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #2d5f3f;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-        .data-table {
-            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-            border: 2px solid #0891b2;
+            padding: 12px 20px;
+            background: #2D5F3F;
+            color: white;
+            text-decoration: none;
             border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 14px;
-        }
-        .table-title {
-            font-size: 11px;
-            font-weight: 700;
-            color: #0c4a6e;
-            text-align: center;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-        .table-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            font-size: 12px;
-            border-bottom: 1px solid #7dd3fc;
-        }
-        .table-row:last-child {
-            border-bottom: none;
-        }
-        .table-label {
-            color: #075985;
             font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.2s;
         }
-        .table-value {
-            color: #0369a1;
-            font-weight: 700;
-            font-size: 14px;
+        
+        .back-button:hover {
+            background: #234a31;
+            transform: translateY(-2px);
         }
-        .sessions-info {
-            font-size: 10px;
-            color: #0c4a6e;
-            text-align: center;
-            font-style: italic;
-            margin-top: 6px;
-        }
-        .instruction-box {
-            background: #fef3c7;
-            border: 2px solid #eab308;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 11px;
-            line-height: 1.5;
-            color: #854d0e;
-            margin-bottom: 12px;
-        }
-        .vision-box {
-            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-            padding: 12px;
-            border-radius: 8px;
-            border: 2px solid #2d5f3f;
-            font-size: 10px;
-            line-height: 1.5;
-            color: #064e3b;
-        }
-        .legend {
+        
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
             background: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            text-align: center;
         }
+        
+        .loading h2 {
+            color: #2D5F3F;
+            margin-bottom: 10px;
+        }
+        
+        .loading p {
+            color: #6b7280;
+        }
+        
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
         .legend-title {
             font-weight: 700;
-            margin-bottom: 8px;
-            font-size: 12px;
+            margin-bottom: 10px;
+            color: #1f2937;
         }
+        
         .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin: 4px 0;
-            font-size: 11px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #4b5563;
         }
-        .legend-color {
-            width: 16px;
-            height: 16px;
+        
+        .legend-marker {
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             border: 2px solid #333;
         }
-        .toggle-btn {
-            margin-top: 8px;
-            padding: 8px;
-            background: #2d5f3f;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            width: 100%;
+        
+        .stats-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            min-width: 200px;
         }
-        .toggle-btn:hover {
-            background: #166534;
+        
+        .stats-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2D5F3F;
+            border-bottom: 2px solid #2D5F3F;
+            padding-bottom: 8px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: #1f2937;
         }
     </style>
 </head>
 <body>
-    <div class="info-panel">
-        <div class="panel-title">Gilmer/Felder Analysis</div>
-        
-        <div class="data-table">
-            <div class="table-title">Area Averages</div>
-            <div class="table-row">
-                <span class="table-label">Scout Rating:</span>
-                <span class="table-value">2.33/10</span>
-            </div>
-            <div class="table-row">
-                <span class="table-label">√CPUE:</span>
-                <span class="table-value">2.22</span>
-            </div>
-            <div class="sessions-info">
-                Based on 6 sessions (4 scouts + 2 collections)
-            </div>
-        </div>
-        
-        <div class="instruction-box">
-            <strong>🌡️ Heatmap Overlay</strong><br>
-            Predicted litter density based on scout ratings. Zoom out to see full coverage.
-            <button class="toggle-btn" onclick="toggleHeatmap()">Toggle Heatmap</button>
-        </div>
-        
-        <div class="vision-box">
-            <strong>Strategic Insight:</strong> Area avg rating (2.33) calibrates to avg √CPUE (2.22). Heatmap shows predicted litter distribution for resource deployment planning.
-        </div>
+    <a href="index.html" class="back-button">← Back to Tracker</a>
+    
+    <div class="loading" id="loading">
+        <h2>Loading Map Data...</h2>
+        <p>Fetching session data from server</p>
     </div>
     
     <div id="map"></div>
     
+    <div class="stats-panel" id="statsPanel" style="display: none;">
+        <div class="stats-title">Session Stats</div>
+        <div class="stat-row">
+            <span class="stat-label">Scout Sessions:</span>
+            <span class="stat-value" id="scoutCount">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Collection Sessions:</span>
+            <span class="stat-value" id="collectionCount">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Total Weight:</span>
+            <span class="stat-value" id="totalWeight">0 lbs</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Total Distance:</span>
+            <span class="stat-value" id="totalDistance">0 mi</span>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-item">
+            <div class="legend-marker" style="background: #4CAF50;"></div>
+            <span>Scout (0-3)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-marker" style="background: #FF9800;"></div>
+            <span>Scout (4-7)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-marker" style="background: #F44336;"></div>
+            <span>Scout (8-10)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-marker" style="background: #2196F3;"></div>
+            <span>Collection Path</span>
+        </div>
+    </div>
+    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <script>
-        var map = L.map('map').setView([32.357, -86.305], 16);
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxyZSKDx1Z_cVeyNTQCRNqiWIhX8Caju1dUdcCLByxxIEvzDQXaYJNzcZxfW1TeTlZT/exec?action=map_data';
         
+        // Initialize map
+        const map = L.map('map').setView([32.356, -86.306], 13);
+        
+        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
+            attribution: '© OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(map);
         
-        var gpsData = {"session_1770156383156_32284tdsx": {"rating": 3, "in_gilmer": true, "is_collection": false, "points": [[32.3571291, -86.30543274], [32.35717203, -86.30515424], [32.35714309, -86.30472367], [32.35716035, -86.30397763], [32.35716684, -86.30311192], [32.35716876, -86.302712], [32.35716732, -86.30188188], [32.3571666, -86.30095439], [32.35717231, -86.3004818]]}, "session_1770156483857_zfqe2xaw1": {"rating": 5, "in_gilmer": false, "is_collection": false, "points": [[32.35718273, -86.2999657], [32.35680312, -86.29990026], [32.3556759, -86.29986023], [32.35440498, -86.2998162], [32.35307934, -86.29977635]]}, "session_1770156749559_nrbi41yb2": {"rating": 7, "in_gilmer": false, "is_collection": false, "points": [[32.33003647, -86.29926848], [32.33003221, -86.29868124], [32.3300487, -86.29781498], [32.33005711, -86.29698961], [32.33005856, -86.29692795]]}, "session_1770156793578_2u8r0gv8g": {"rating": 7, "in_gilmer": false, "is_collection": false, "points": [[32.33010911, -86.29682808], [32.33073751, -86.29668921], [32.33128479, -86.29615751], [32.3319027, -86.29564135], [32.33263645, -86.29539313], [32.33335991, -86.29526199], [32.33345881, -86.29524657]]}, "session_1770156860345_c80e4p6g9": {"rating": 8, "in_gilmer": false, "is_collection": false, "points": [[32.3336093, -86.29527451], [32.33381127, -86.29610582], [32.3340769, -86.29713122], [32.33418363, -86.29758379], [32.33427914, -86.29850127], [32.33428081, -86.29859289]]}, "session_1770157044962_28t2fxug4": {"rating": 6, "in_gilmer": false, "is_collection": false, "points": [[32.33114891, -86.29633913], [32.33074428, -86.29611528], [32.33047426, -86.29533523], [32.33053989, -86.29450386], [32.33064337, -86.29388899]]}, "session_1770157137519_y0hg2t1bo": {"rating": 4, "in_gilmer": false, "is_collection": false, "points": [[32.33373065, -86.29330717], [32.33434875, -86.29348681], [32.33502023, -86.29359273], [32.33560534, -86.29361979], [32.33622712, -86.29365767], [32.33627358, -86.29365873]]}, "session_1770157224324_9cmg0hocc": {"rating": 2, "in_gilmer": false, "is_collection": false, "points": [[32.33874845, -86.29362579], [32.33947714, -86.29362541], [32.34018253, -86.29363862], [32.34088258, -86.29365425], [32.34161222, -86.29374351], [32.34170988, -86.29374531]]}, "session_1770157298542_m6buoi38s": {"rating": 1, "in_gilmer": false, "is_collection": false, "points": [[32.34209973, -86.29376957], [32.3427043, -86.29353102], [32.34334855, -86.29377763], [32.34404415, -86.29408058], [32.34444071, -86.29407411], [32.34452768, -86.29407503]]}, "session_1770157371458_k20ncw2fh": {"rating": 1, "in_gilmer": false, "is_collection": false, "points": [[32.34681474, -86.2941382], [32.34713711, -86.29413123], [32.34789087, -86.29416412], [32.34865731, -86.29417038], [32.34939479, -86.29419469], [32.35015601, -86.29421894], [32.35064779, -86.29421637], [32.35064371, -86.29421719]]}, "session_1770157514894_lvewbxu8s": {"rating": 0, "in_gilmer": false, "is_collection": false, "points": [[32.35368263, -86.29215811], [32.35387055, -86.29252136], [32.35408113, -86.29342891], [32.35437977, -86.29438056], [32.35515204, -86.29498826], [32.35528146, -86.29503383]]}, "session_1770157686730_8q1021uwh": {"rating": 1, "in_gilmer": true, "is_collection": false, "points": [[32.35743742, -86.30290648], [32.35718089, -86.30305944], [32.35718894, -86.30403168], [32.3571863, -86.30455542], [32.35718144, -86.3050442], [32.35716509, -86.30610274], [32.35715897, -86.30672467], [32.3571596, -86.30673843]]}, "session_1770157795871_efkuin557": {"rating": 2, "in_gilmer": true, "is_collection": false, "points": [[32.35915173, -86.30486207], [32.35873392, -86.30472857], [32.35787377, -86.30471171], [32.35728758, -86.30469811], [32.35672005, -86.30468286], [32.35589319, -86.3046629], [32.35497301, -86.30464021], [32.35403712, -86.30462958], [32.35357268, -86.30471645], [32.35358425, -86.30480789]]}, "session_1770157898953_1zy8h3jfx": {"rating": 2, "in_gilmer": true, "is_collection": false, "points": [[32.35358819, -86.30647492], [32.35375549, -86.30674229], [32.35473169, -86.30676581], [32.35588029, -86.30680984], [32.35691038, -86.30680183], [32.35703711, -86.30680357]]}, "session_1770158608763_oufuzgo4n": {"rating": 3, "in_gilmer": true, "is_collection": true, "points": [[32.35683347, -86.30553829], [32.35683347, -86.30553829], [32.35706876, -86.30563364], [32.35710786, -86.305813], [32.35712392, -86.30585892], [32.35712517, -86.30587048], [32.35713832, -86.30598376], [32.35716041, -86.30618692], [32.35724982, -86.30628826], [32.35730088, -86.30639237], [32.35737056, -86.30664878], [32.35728542, -86.30672371], [32.35737552, -86.30684759], [32.35737243, -86.30681379], [32.35738885, -86.30708804], [32.35740855, -86.30682356], [32.35742808, -86.30689192], [32.35736077, -86.30648817], [32.35723311, -86.30618708], [32.35711852, -86.30600869], [32.3570749, -86.30590083], [32.35712723, -86.30582678], [32.35683347, -86.30553829], [32.35683347, -86.30553829], [32.35683347, -86.30553829], [32.35704868, -86.3057117], [32.35704767, -86.30570055], [32.35683347, -86.30553829], [32.35683347, -86.30553829], [32.35683347, -86.30553829], [32.35683347, -86.30553829], [32.35698341, -86.30584505], [32.35694966, -86.30520448], [32.35694888, -86.3051924], [32.35693925, -86.30532985], [32.35694802, -86.30534029], [32.3569696, -86.30536849], [32.35694545, -86.30533759], [32.35693794, -86.30509236], [32.35690663, -86.30484184], [32.356903, -86.30458421], [32.3568826, -86.30450034], [32.35695443, -86.30456374], [32.35693753, -86.30436803], [32.35692544, -86.30469978], [32.35696671, -86.30441403], [32.35691709, -86.30415026], [32.35706335, -86.30368633], [32.35710195, -86.30371194], [32.35710891, -86.30356378], [32.35707593, -86.30365338], [32.35691966, -86.30296483], [32.35698451, -86.30289383], [32.35694412, -86.30272658], [32.3569341, -86.30267755], [32.3569341, -86.30267755], [32.35700121, -86.30284432], [32.35708181, -86.30297285], [32.35712129, -86.30307457], [32.35721241, -86.30333708], [32.3571497, -86.30306209], [32.35702961, -86.30272747], [32.35702814, -86.30261538], [32.3570179, -86.30247403], [32.35702554, -86.30239015], [32.35704105, -86.30241], [32.35700218, -86.30250057], [32.3571971, -86.30277639], [32.35716727, -86.30280093], [32.35722063, -86.302879], [32.35723152, -86.30272386], [32.35740462, -86.30326153], [32.35737488, -86.30324704], [32.3574211, -86.30334507], [32.35738872, -86.30362924], [32.35730227, -86.3036382], [32.35719881, -86.30378098], [32.35713663, -86.30398448], [32.3572367, -86.30405394], [32.35730717, -86.30419997], [32.35725392, -86.30448091], [32.3571556, -86.30481187], [32.35725717, -86.30501188], [32.35707066, -86.30525491], [32.35698521, -86.30533837], [32.35710845, -86.30494393], [32.35704973, -86.30491958], [32.35697608, -86.30510309], [32.35695595, -86.30515224], [32.35683347, -86.30553829], [32.35683347, -86.30553829], [32.35700891, -86.30535899], [32.35708633, -86.30533058], [32.3570583, -86.30534907], [32.35712037, -86.3053992], [32.35683347, -86.30553829], [32.35683347, -86.30553829]], "weight": 1.91, "distance": 1.016112855, "duration_min": 16.8, "cpue": 6.73, "sqrt_cpue": 2.59}, "session_1770159751299_hr9po4dhs": {"rating": 3, "in_gilmer": true, "is_collection": true, "points": [[32.3570557, -86.30479784], [32.35723178, -86.30475702], [32.35733671, -86.30475166], [32.35733919, -86.30474756], [32.35740083, -86.30470716], [32.35750293, -86.30472039], [32.35761561, -86.30473587], [32.35771356, -86.3047234], [32.35781391, -86.30472668], [32.35786518, -86.30474746], [32.35788378, -86.30475036], [32.35795707, -86.30475373], [32.3580764, -86.30474306], [32.35814247, -86.30474343], [32.3582141, -86.30475173], [32.35823443, -86.3047621], [32.35829281, -86.30475582], [32.35835462, -86.30476235], [32.35841208, -86.30475837], [32.35849907, -86.30474795], [32.35857749, -86.30475382], [32.35865628, -86.30474926], [32.35876888, -86.30473726], [32.35891114, -86.30474736], [32.35904118, -86.30476569], [32.35917861, -86.3047678], [32.3592122, -86.30473276], [32.35919896, -86.30459006], [32.35918434, -86.30449834], [32.35913117, -86.30461753], [32.35901395, -86.30467653], [32.35887492, -86.30468666], [32.35878996, -86.30466106], [32.35875727, -86.30468695], [32.35864166, -86.30468202], [32.35850315, -86.30467187], [32.35838402, -86.30467426], [32.3582569, -86.30466275], [32.35812825, -86.30465773], [32.35800162, -86.30465778], [32.35791611, -86.30465455], [32.35786649, -86.3046461], [32.35783238, -86.30463823], [32.35780996, -86.30465537], [32.35778463, -86.30464313], [32.35767993, -86.30464611], [32.35758526, -86.3046381], [32.35746143, -86.30464268], [32.35734886, -86.30464264], [32.3572896, -86.3046491], [32.35727245, -86.30465586], [32.35726421, -86.30464425], [32.35717176, -86.30465026], [32.35708219, -86.30465923], [32.35704242, -86.30462737], [32.3569643, -86.30464033], [32.35684722, -86.30463335], [32.35670767, -86.30463755], [32.35660114, -86.3046386], [32.35647646, -86.30463492], [32.35634616, -86.30463203], [32.35622087, -86.30463798], [32.3560923, -86.30463246], [32.35596235, -86.30462258], [32.3558504, -86.30462701], [32.35571506, -86.30461959], [32.35560539, -86.30461754], [32.35548416, -86.30462225], [32.35533925, -86.30460342], [32.3552769, -86.3046083], [32.3551465, -86.30460908], [32.3550519, -86.30459275], [32.35495288, -86.30460116], [32.35481793, -86.30459967], [32.35468957, -86.30459858], [32.35456223, -86.30460233], [32.35457351, -86.30458368], [32.35452512, -86.3045802], [32.3544661, -86.30457517], [32.35438976, -86.30454974], [32.35429822, -86.30457586], [32.35419137, -86.30457017], [32.35412752, -86.30456598], [32.35401976, -86.30457247], [32.35389971, -86.30456818], [32.35384183, -86.30456414], [32.35375853, -86.3045619], [32.3536623, -86.30456527], [32.35366117, -86.30463261], [32.35377434, -86.30464417], [32.35384412, -86.30464433], [32.35395475, -86.30465127], [32.35406391, -86.30465414], [32.35416477, -86.30466024], [32.35429167, -86.30465822], [32.35441454, -86.30465589], [32.35451797, -86.30465843], [32.35462514, -86.30466215], [32.35473342, -86.30465908], [32.35484526, -86.30466252], [32.35490811, -86.30465949], [32.35502894, -86.30466598], [32.35515082, -86.30466305], [32.35523223, -86.30470612], [32.35530899, -86.30467888], [32.35541219, -86.30466526], [32.35546058, -86.30465823], [32.35556072, -86.30467608], [32.3556764, -86.30468454], [32.35576803, -86.30468797], [32.35584014, -86.30468776], [32.35589765, -86.30468338], [32.35599747, -86.30469702], [32.3561101, -86.30468688], [32.35615884, -86.3046938], [32.35627718, -86.30470123], [32.35633596, -86.30470373], [32.35645191, -86.30470476], [32.35656723, -86.30470246], [32.3567045, -86.3047096], [32.35684379, -86.30471077], [32.35689105, -86.30472188], [32.35692852, -86.30471445], [32.35692995, -86.3047067], [32.35696771, -86.30470959], [32.35702547, -86.30470765], [32.35709836, -86.30471019], [32.35711621, -86.30476519], [32.35711667, -86.30482268]], "weight": 1.04, "distance": 0.8066995709, "duration_min": 22.6, "cpue": 3.43, "sqrt_cpue": 1.85}};
-        var heatmapData = [[32.3571291, -86.30543274, 0.3], [32.35718273, -86.2999657, 0.5], [32.33003647, -86.29926848, 0.7], [32.33010911, -86.29682808, 0.7], [32.3336093, -86.29527451, 0.8], [32.33114891, -86.29633913, 0.6], [32.33373065, -86.29330717, 0.4], [32.33874845, -86.29362579, 0.2], [32.34209973, -86.29376957, 0.1], [32.34681474, -86.2941382, 0.1], [32.35368263, -86.29215811, 0.0], [32.35743742, -86.30290648, 0.1], [32.35915173, -86.30486207, 0.2], [32.35358819, -86.30647492, 0.2], [32.35683347, -86.30553829, 0.3], [32.3570557, -86.30479784, 0.3]];
-        
-        function getRatingColor(rating) {
-            var colors = ['#10b981', '#34d399', '#4ade80', '#84cc16', '#eab308', 
-                        '#f59e0b', '#f97316', '#ef4444', '#dc2626', '#b91c1c', '#991b1b'];
-            return colors[rating] || '#999';
+        // Color functions
+        function getScoutColor(rating) {
+            if (rating <= 3) return '#4CAF50'; // Green
+            if (rating <= 7) return '#FF9800'; // Orange
+            return '#F44336'; // Red
         }
         
-        // Create heatmap layer
-        var heatLayer = L.heatLayer(heatmapData, {
-            radius: 30,
-            blur: 25,
-            maxZoom: 17,
-            max: 1.0,
-            gradient: {
-                0.0: '#10b981',
-                0.3: '#84cc16', 
-                0.5: '#eab308',
-                0.7: '#f97316',
-                1.0: '#dc2626'
-            },
-            minOpacity: 0.3,
-            opacity: 0.5
-        }).addTo(map);
+        function getScoutSize(rating) {
+            return 8 + (rating * 0.5); // Size increases with rating
+        }
         
-        function toggleHeatmap() {
-            if (map.hasLayer(heatLayer)) {
-                map.removeLayer(heatLayer);
-            } else {
-                map.addLayer(heatLayer);
+        // Load and display data
+        async function loadMapData() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL);
+                const result = await response.json();
+                
+                if (result.status !== 'success') {
+                    throw new Error('Failed to load data');
+                }
+                
+                const data = result.data;
+                let totalWeight = 0;
+                let totalDistance = 0;
+                const bounds = [];
+                
+                // Add scout markers
+                data.scouts.forEach(scout => {
+                    if (!scout.lat || !scout.lon) return;
+                    
+                    const color = getScoutColor(scout.rating);
+                    const size = getScoutSize(scout.rating);
+                    
+                    const marker = L.circleMarker([scout.lat, scout.lon], {
+                        radius: size,
+                        fillColor: color,
+                        color: '#333',
+                        weight: 2,
+                        fillOpacity: 0.7
+                    }).addTo(map);
+                    
+                    const popupContent = `
+                        <div style="font-family: sans-serif;">
+                            <strong style="color: ${color};">Scout Session</strong><br>
+                            <strong>Rating:</strong> ${scout.rating}/10<br>
+                            <strong>Volunteer:</strong> ${scout.volunteer}<br>
+                            <strong>Organization:</strong> ${scout.organization}<br>
+                            <strong>Date:</strong> ${new Date(scout.timestamp).toLocaleDateString()}<br>
+                            ${scout.notes ? `<strong>Notes:</strong> ${scout.notes}` : ''}
+                        </div>
+                    `;
+                    
+                    marker.bindPopup(popupContent);
+                    bounds.push([scout.lat, scout.lon]);
+                });
+                
+                // Add collection paths
+                data.collections.forEach(collection => {
+                    totalWeight += collection.weight;
+                    totalDistance += collection.distance;
+                    
+                    const path = data.gpsPaths[collection.sessionId];
+                    if (!path || path.length === 0) return;
+                    
+                    const coordinates = path.map(p => [p.lat, p.lon]);
+                    
+                    const polyline = L.polyline(coordinates, {
+                        color: '#2196F3',
+                        weight: 3,
+                        opacity: 0.7
+                    }).addTo(map);
+                    
+                    const popupContent = `
+                        <div style="font-family: sans-serif;">
+                            <strong style="color: #2196F3;">Collection Session</strong><br>
+                            <strong>Weight:</strong> ${collection.weight.toFixed(1)} lbs<br>
+                            <strong>Distance:</strong> ${collection.distance.toFixed(2)} mi<br>
+                            <strong>Duration:</strong> ${Math.floor(collection.duration / 60)} min<br>
+                            <strong>Volunteer:</strong> ${collection.volunteer}<br>
+                            <strong>Organization:</strong> ${collection.organization}<br>
+                            <strong>Date:</strong> ${new Date(collection.timestamp).toLocaleDateString()}
+                        </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    coordinates.forEach(coord => bounds.push(coord));
+                });
+                
+                // Update stats
+                document.getElementById('scoutCount').textContent = data.scouts.length;
+                document.getElementById('collectionCount').textContent = data.collections.length;
+                document.getElementById('totalWeight').textContent = totalWeight.toFixed(1) + ' lbs';
+                document.getElementById('totalDistance').textContent = totalDistance.toFixed(2) + ' mi';
+                
+                // Fit map to bounds
+                if (bounds.length > 0) {
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+                
+                // Hide loading, show stats
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('statsPanel').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading map data:', error);
+                document.getElementById('loading').innerHTML = `
+                    <h2 style="color: #dc2626;">Error Loading Data</h2>
+                    <p>Failed to fetch session data. Please try again later.</p>
+                `;
             }
         }
         
-        // Draw all paths
-        for (var sessionId in gpsData) {
-            var session = gpsData[sessionId];
-            var color = getRatingColor(session.rating);
-            var weight = session.in_gilmer ? 5 : 3;
-            var opacity = session.in_gilmer ? 0.9 : 0.6;
-            
-            var line = L.polyline(session.points, {
-                color: color,
-                weight: weight,
-                opacity: opacity
-            }).addTo(map);
-            
-            if (session.is_collection) {
-                line.bindPopup(
-                    '<strong>Collection + Scout</strong><br>' +
-                    'Rating: <strong>' + session.rating + '/10</strong><br>' +
-                    'Weight: <strong>' + session.weight + ' lbs</strong><br>' +
-                    'Distance: <strong>' + session.distance + ' mi</strong><br>' +
-                    'Duration: <strong>' + session.duration_min + ' min</strong><br>' +
-                    '√CPUE: <strong style="color: #0369a1;">' + session.sqrt_cpue + '</strong>'
-                );
-            } else {
-                line.bindPopup(
-                    '<strong>Scout Rating</strong><br>' +
-                    'Rating: <strong>' + session.rating + '/10</strong>'
-                );
-            }
-            
-            // Start marker
-            var radius = session.in_gilmer ? 8 : 5;
-            L.circleMarker(session.points[0], {
-                radius: radius,
-                fillColor: color,
-                color: '#fff',
-                weight: 2,
-                fillOpacity: 1
-            }).addTo(map);
-        }
-        
-        // Legend
-        var legend = L.control({position: 'bottomleft'});
-        legend.onAdd = function(map) {
-            var div = L.DomUtil.create('div', 'legend');
-            div.innerHTML = `
-                <div class="legend-title">Predicted Litter Density</div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #10b981;"></span>
-                    <span>Low (0-2)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #eab308;"></span>
-                    <span>Moderate (3-5)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #f97316;"></span>
-                    <span>Heavy (6-7)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #dc2626;"></span>
-                    <span>Severe (8-10)</span>
-                </div>
-                <div style="margin-top: 8px; font-size: 10px; color: #666; line-height: 1.3;">
-                    Heatmap interpolates between scout ratings to predict litter concentration.
-                </div>
-            `;
-            return div;
-        };
-        legend.addTo(map);
+        // Load data when page loads
+        loadMapData();
     </script>
 </body>
 </html>
