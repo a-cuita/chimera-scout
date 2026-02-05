@@ -814,19 +814,10 @@
                         const matchIcon = val.tierMatch ? '✓' : '○';
                         const matchColor = val.tierMatch ? '#10b981' : '#f59e0b';
                         
-                        detailHtml += `<br><span style="color: ${matchColor}; font-size: 12px;">${matchIcon} Validated Scout ${val.scoutRating}/10 (Tier ${val.scoutTier}-${val.cpueTier})</span>`;
+                        detailHtml += '<br><span style="color: ' + matchColor + '; font-size: 12px;">' + matchIcon + ' Validated Scout ' + val.scoutRating + '/10 (Tier ' + val.scoutTier + '-' + val.cpueTier + ')</span>';
                     }
                     
-                    html += `
-                        <div class="activity-item">
-                            <div class="activity-icon">${icon}</div>
-                            <div class="activity-content">
-                                <div class="activity-name">${activity.volunteer}</div>
-                                <div class="activity-detail">${detailHtml}</div>
-                                <div class="activity-time">${timeAgo}</div>
-                            </div>
-                        </div>
-                    `;
+                    html += '<div class="activity-item"><div class="activity-icon">' + icon + '</div><div class="activity-content"><div class="activity-name">' + activity.volunteer + '</div><div class="activity-detail">' + detailHtml + '</div><div class="activity-time">' + timeAgo + '</div></div></div>';
                 });
                 activityList.innerHTML = html;
             }
