@@ -783,47 +783,71 @@
         // ACTIVITY FEED
         // ==========================================
         async function loadActivityFeed() {
-            try {
-                const response = await fetch(APPS_SCRIPT_URL);
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    const data = result.data;
+    try {
+        const response = await fetch(APPS_SCRIPT_URL);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            const data = result.data;
+            
+            // Update stats
+            document.getElementById('sessionsToday').textContent = data.sessionsToday;
+            document.getElementById('unvalidatedScouts').textContent = data.unvalidatedScouts;
+            
+            // Build activity list
+            const activityList = document.getElementById('activityList');
+            
+            if (data.recentActivity.length === 0) {
+                activityList.innerHTML = '<div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 20px;">No recent activity</div>';
+            } else {
+                let html = '';
+                data.recentActivity.forEach(activity => {
+                    const icon = activity.type === 'scout' ? '🔍' : '🗑️';
+                    const timeAgo = getTimeAgo(new Date(activity.timestamp));
                     
-                    // Update stats
-                    document.getElementById('sessionsToday').textContent = data.sessionsToday;
-                    document.getElementById('unvalidatedScouts').textContent = data.unvalidatedScouts;
+                    // Base activity item
+                    let detailHtml = activity.detail;
                     
-                    // Build activity list
-                    const activityList = document.getElementById('activityList');
-                    
-                    if (data.recentActivity.length === 0) {
-                        activityList.innerHTML = '<div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 20px;">No recent activity</div>';
-                    } else {
-                        let html = '';
-                        data.recentActivity.forEach(activity => {
-                            const icon = activity.type === 'scout' ? '🔍' : '🗑️';
-                            const timeAgo = getTimeAgo(new Date(activity.timestamp));
-                            
-                            html += `
-                                <div class="activity-item">
-                                    <div class="activity-icon">${icon}</div>
-                                    <div class="activity-content">
-                                        <div class="activity-name">${activity.volunteer}</div>
-                                        <div class="activity-detail">${activity.detail}</div>
-                                        <div class="activity-time">${timeAgo}</div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        activityList.innerHTML = html;
+                    // Add validation info for collections
+                    if (activity.type === 'collection' && activity.validation && activity.validation.length > 0) {
+                        const val = activity.validation[0];
+                        const matchIcon = val.tierMatch ? '✓' : '○';
+                        const matchColor = val.tierMatch ? '#10b981' : '#f59e0b';
+                        
+                        detailHtml += `<br><span style="color: ${matchColor}; font-size: 12px;">${matchIcon} Validated Scout ${val.scoutRating}/10 (Tier ${val.scoutTier}→${val.cpueTier})</span>`;
                     }
-                }
-            } catch (error) {
-                console.error('Activity feed error:', error);
-                document.getElementById('activityList').innerHTML = '<div style="text-align: center; color: #dc2626; font-size: 13px; padding: 20px;">Failed to load activity</div>';
+                    
+                    html += `
+                        <div class="activity-item">
+                            <div class="activity-icon">${icon}</div>
+                            <div class="activity-content">
+                                <div class="activity-name">${activity.volunteer}</div>
+                                <div class="activity-detail">${detailHtml}</div>
+                                <div class="activity-time">${timeAgo}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                activityList.innerHTML = html;
             }
         }
+    } catch (error) {
+        console.error('Activity feed error:', error);
+        document.getElementById('activityList').innerHTML = '<div style="text-align: center; color: #dc2626; font-size: 13px; padding: 20px;">Failed to load activity</div>';
+    }
+}
+```
+
+---
+
+## ✅ WHAT THIS SHOWS
+
+**For collections with validation:**
+```
+🗑️ Jeremy
+   collected 1.91 lbs (√CPUE: 0.72)
+   ✓ Validated Scout 1/10 (Tier 0→0)
+   16 min ago
         
         function getTimeAgo(date) {
             const seconds = Math.floor((new Date() - date) / 1000);
