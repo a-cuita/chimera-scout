@@ -241,6 +241,19 @@
             background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
             padding: 12px; margin-bottom: 16px; font-size: 12px; color: #1e40af; line-height: 1.5;
         }
+        
+        /* Profile Edit Dropdown */
+        .profile-edit-toggle {
+            text-align: center; font-size: 13px; color: #2D5F3F;
+            cursor: pointer; margin-top: 8px; font-weight: 600;
+        }
+        .profile-edit-toggle:hover { text-decoration: underline; }
+        .profile-edit-pane {
+            display: none; background: #f9fafb; border: 2px solid #e5e7eb;
+            border-radius: 12px; padding: 16px; margin-top: 12px; margin-bottom: 20px;
+        }
+        .profile-edit-pane.show { display: block; }
+        .profile-edit-pane h4 { font-size: 14px; color: #1f2937; margin-bottom: 16px; }
     </style>
 </head>
 <body>
@@ -276,6 +289,9 @@
                         <input type="text" class="form-input" id="loginPIN" placeholder="e.g. jb07" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
                     </div>
                     <button class="btn btn-primary" id="loginBtn" disabled>Log In</button>
+                    <div style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 8px;">
+                        Forgot your PIN? Contact your organization lead to request a reset.
+                    </div>
                     <div class="login-toggle" id="showCreateToggle">New here? Create a profile →</div>
                 </div>
 
@@ -306,6 +322,21 @@
                             <input type="text" class="form-input" id="createCustomOrgText" placeholder="Enter organization name">
                         </div>
                     </div>
+                    
+                    <h3 style="font-size: 15px; color: #1f2937; margin: 20px 0 12px;">Location (Optional)</h3>
+                    <div class="form-group">
+                        <label class="form-label">Street Address</label>
+                        <input type="text" class="form-input" id="createStreet" placeholder="123 Main St">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Neighborhood</label>
+                        <input type="text" class="form-input" id="createNeighborhood" placeholder="e.g. Cloverdale, Capitol Heights">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Zip Code</label>
+                        <input type="text" class="form-input" id="createZip" placeholder="36104" maxlength="5">
+                    </div>
+                    
                     <button class="btn btn-primary" id="createProfileBtn" disabled>Create Profile</button>
                     <div class="login-toggle" id="showLoginToggle">Already have a profile? Log in →</div>
                 </div>
@@ -399,6 +430,44 @@
                         <span class="status-label">Organization</span>
                         <span class="status-value" id="displayOrg" style="font-size: 14px;">—</span>
                     </div>
+                    <div class="profile-edit-toggle" id="profileEditToggle">✏️ Edit Profile</div>
+                </div>
+
+                <!-- Profile Edit Pane -->
+                <div class="profile-edit-pane" id="profileEditPane">
+                    <h4>Edit Your Profile</h4>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 13px;">Street Address</label>
+                        <input type="text" class="form-input" id="editStreet" placeholder="123 Main St">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 13px;">Neighborhood</label>
+                        <input type="text" class="form-input" id="editNeighborhood" placeholder="e.g. Cloverdale">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 13px;">Zip Code</label>
+                        <input type="text" class="form-input" id="editZip" placeholder="36104" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 13px;">Organization</label>
+                        <select class="form-select" id="editOrgSelect">
+                            <option value="">Select organization</option>
+                            <option value="Baled It!">Baled It!</option>
+                            <option value="Help A Brother Out Foundation">Help A Brother Out Foundation</option>
+                            <option value="West Montgomery Action Committee">West Montgomery Action Committee</option>
+                            <option value="other">Other...</option>
+                        </select>
+                        <div class="custom-org-input" id="editCustomOrg">
+                            <input type="text" class="form-input" id="editCustomOrgText" placeholder="Enter organization name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 13px;">Change PIN (optional)</label>
+                        <input type="text" class="form-input" id="editPIN" placeholder="Leave blank to keep current" maxlength="4" style="text-transform: lowercase;">
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Format: two letters + two numbers (e.g. km23)</div>
+                    </div>
+                    <button class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+                    <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
                 </div>
 
                 <!-- Safety Container -->
@@ -615,6 +684,11 @@
                     </select>
                 </div>
 
+                <div class="form-group" id="hrDescriptionWrap" style="display: none;">
+                    <label class="form-label">Description (required for Mixed or Other)</label>
+                    <input type="text" class="form-input" id="hrDescription" placeholder="Describe the materials">
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Estimated Weight (lbs)</label>
                     <input type="number" class="form-input" id="hrWeight" placeholder="0.0" step="0.1" min="0">
@@ -627,29 +701,12 @@
                     <label class="form-label">Where is this going?</label>
                     <select class="form-select" id="hrDestination">
                         <option value="">Select destination...</option>
-                        <option value="Municipal Recycling">Municipal Recycling (curbside)</option>
-                        <option value="Scrap Yard">Scrap Yard</option>
-                        <option value="Drop-off Center">Drop-off Center</option>
+                        <option value="Municipal">Municipal</option>
                         <option value="Other">Other</option>
                     </select>
                     <div class="custom-org-input" id="hrDestOtherWrap">
                         <input type="text" class="form-input" id="hrDestOther" placeholder="Describe destination">
                     </div>
-                </div>
-
-                <h3 style="font-size: 15px; color: #1f2937; margin-bottom: 12px;">Location (at least one required)</h3>
-
-                <div class="form-group">
-                    <label class="form-label" style="font-size: 13px;">Street Address</label>
-                    <input type="text" class="form-input" id="hrStreet" placeholder="123 Main St">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" style="font-size: 13px;">Neighborhood</label>
-                    <input type="text" class="form-input" id="hrNeighborhood" placeholder="e.g. Cloverdale, Capitol Heights">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" style="font-size: 13px;">Zip Code</label>
-                    <input type="text" class="form-input" id="hrZip" placeholder="36104" inputmode="numeric" maxlength="5">
                 </div>
 
                 <button class="btn btn-primary" id="submitHRBtn" disabled>Submit Recycling Log</button>
@@ -796,7 +853,7 @@
 
                     if (sunLocked) {
                         document.getElementById('lockoutBanner').classList.remove('hidden');
-                        document.getElementById('lockoutSunrise').textContent = result.sunrise;
+                        document.getElementById('lockoutSunrise').textContent = result.tomorrowSunrise;
                         // Disable outdoor mode buttons
                         document.getElementById('scoutOnlyBtn').disabled = true;
                         document.getElementById('collectTrackBtn').disabled = true;
@@ -984,7 +1041,10 @@
                     action: 'create_profile',
                     handle: createHandle.value.trim(),
                     pin: createPIN.value.trim().toLowerCase(),
-                    organization: org
+                    organization: org,
+                    streetAddress: document.getElementById('createStreet').value.trim(),
+                    neighborhood: document.getElementById('createNeighborhood').value.trim(),
+                    zipCode: document.getElementById('createZip').value.trim()
                 });
                 const response = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
                 const result = await response.json();
@@ -994,9 +1054,9 @@
                         userId: result.userId,
                         handle: result.handle,
                         organization: org,
-                        streetAddress: '',
-                        neighborhood: '',
-                        zipCode: '',
+                        streetAddress: document.getElementById('createStreet').value.trim(),
+                        neighborhood: document.getElementById('createNeighborhood').value.trim(),
+                        zipCode: document.getElementById('createZip').value.trim(),
                         tcAccepted: false
                     };
                     saveSession();
@@ -1012,6 +1072,108 @@
 
             createProfileBtn.disabled = false;
             createProfileBtn.textContent = 'Create Profile';
+        });
+
+        // ==========================================
+        // PROFILE EDIT
+        // ==========================================
+        const profileEditToggle = document.getElementById('profileEditToggle');
+        const profileEditPane = document.getElementById('profileEditPane');
+        const editStreet = document.getElementById('editStreet');
+        const editNeighborhood = document.getElementById('editNeighborhood');
+        const editZip = document.getElementById('editZip');
+        const editOrgSelect = document.getElementById('editOrgSelect');
+        const editCustomOrgText = document.getElementById('editCustomOrgText');
+        const editPIN = document.getElementById('editPIN');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+        profileEditToggle.addEventListener('click', () => {
+            profileEditPane.classList.toggle('show');
+            if (profileEditPane.classList.contains('show')) {
+                // Populate current values
+                editStreet.value = currentUser.streetAddress || '';
+                editNeighborhood.value = currentUser.neighborhood || '';
+                editZip.value = currentUser.zipCode || '';
+                if (currentUser.organization === 'Baled It!' || 
+                    currentUser.organization === 'Help A Brother Out Foundation' || 
+                    currentUser.organization === 'West Montgomery Action Committee') {
+                    editOrgSelect.value = currentUser.organization;
+                    document.getElementById('editCustomOrg').classList.remove('show');
+                } else {
+                    editOrgSelect.value = 'other';
+                    editCustomOrgText.value = currentUser.organization || '';
+                    document.getElementById('editCustomOrg').classList.add('show');
+                }
+                editPIN.value = '';
+            }
+        });
+
+        editOrgSelect.addEventListener('change', () => {
+            document.getElementById('editCustomOrg').classList.toggle('show', editOrgSelect.value === 'other');
+        });
+
+        cancelEditBtn.addEventListener('click', () => {
+            profileEditPane.classList.remove('show');
+            editPIN.value = '';
+        });
+
+        saveProfileBtn.addEventListener('click', async function() {
+            saveProfileBtn.disabled = true;
+            saveProfileBtn.textContent = 'Saving...';
+
+            const org = editOrgSelect.value === 'other'
+                ? editCustomOrgText.value.trim()
+                : editOrgSelect.value;
+
+            const updates = {
+                action: 'update_profile',
+                userId: currentUser.userId,
+                streetAddress: editStreet.value.trim(),
+                neighborhood: editNeighborhood.value.trim(),
+                zipCode: editZip.value.trim(),
+                organization: org
+            };
+
+            // Only include newPin if user entered one
+            if (editPIN.value.trim()) {
+                const pin = editPIN.value.trim().toLowerCase();
+                if (!/^[a-zA-Z]{2}[0-9]{2}$/.test(pin)) {
+                    showMessage('PIN must be 2 letters + 2 numbers (e.g. jb07)', 'error');
+                    saveProfileBtn.disabled = false;
+                    saveProfileBtn.textContent = 'Save Changes';
+                    return;
+                }
+                updates.newPin = pin;
+            }
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+
+                // Update local currentUser object
+                currentUser.streetAddress = editStreet.value.trim();
+                currentUser.neighborhood = editNeighborhood.value.trim();
+                currentUser.zipCode = editZip.value.trim();
+                currentUser.organization = org;
+                
+                saveSession();
+                document.getElementById('displayOrg').textContent = org || '—';
+                
+                showMessage('✓ Profile updated!', 'success');
+                profileEditPane.classList.remove('show');
+                editPIN.value = '';
+            } catch (error) {
+                console.error('Profile update error:', error);
+                showMessage('Update failed. Please try again.', 'error');
+            }
+
+            saveProfileBtn.disabled = false;
+            saveProfileBtn.textContent = 'Save Changes';
         });
 
         // ==========================================
@@ -1394,17 +1556,17 @@
         // HOUSEHOLD RECYCLING FLOW
         // ==========================================
         recycleBtn.addEventListener('click', function() {
-            // Pre-fill location from profile
-            document.getElementById('hrStreet').value = currentUser.streetAddress || '';
-            document.getElementById('hrNeighborhood').value = currentUser.neighborhood || '';
-            document.getElementById('hrZip').value = currentUser.zipCode || '';
-
-            // First-time location prompt
-            if (!currentUser.streetAddress && !currentUser.neighborhood && !currentUser.zipCode) {
-                showMessage('Fill in at least one location field. This will be saved to your profile.', 'warning');
-            }
-
             showScreen('recycleScreen');
+        });
+
+        // HR material type - show/hide description field
+        document.getElementById('hrMaterialType').addEventListener('change', function() {
+            const needsDescription = this.value === 'Mixed' || this.value === 'Other';
+            document.getElementById('hrDescriptionWrap').style.display = needsDescription ? 'block' : 'none';
+            if (!needsDescription) {
+                document.getElementById('hrDescription').value = '';
+            }
+            validateHR();
         });
 
         // HR destination "Other" toggle
@@ -1414,46 +1576,49 @@
         });
 
         // HR validation
-        ['hrMaterialType', 'hrWeight', 'hrDestination', 'hrStreet', 'hrNeighborhood', 'hrZip'].forEach(id => {
+        ['hrMaterialType', 'hrDescription', 'hrWeight', 'hrDestination'].forEach(id => {
             document.getElementById(id).addEventListener('input', validateHR);
             document.getElementById(id).addEventListener('change', validateHR);
         });
 
         function validateHR() {
-            const materialOk = document.getElementById('hrMaterialType').value !== '';
+            const materialType = document.getElementById('hrMaterialType').value;
+            const materialOk = materialType !== '';
+            
+            // Check if description is required and filled
+            const needsDescription = materialType === 'Mixed' || materialType === 'Other';
+            const descriptionOk = !needsDescription || document.getElementById('hrDescription').value.trim() !== '';
+            
             const weightOk = parseFloat(document.getElementById('hrWeight').value) > 0;
             const destOk = document.getElementById('hrDestination').value !== '';
-            const locationOk = document.getElementById('hrStreet').value.trim() !== '' ||
-                              document.getElementById('hrNeighborhood').value.trim() !== '' ||
-                              document.getElementById('hrZip').value.trim() !== '';
-            document.getElementById('submitHRBtn').disabled = !(materialOk && weightOk && destOk && locationOk);
+            
+            document.getElementById('submitHRBtn').disabled = !(materialOk && descriptionOk && weightOk && destOk);
         }
 
         document.getElementById('submitHRBtn').addEventListener('click', async function() {
             this.disabled = true;
             this.textContent = 'Submitting...';
 
-            const street = document.getElementById('hrStreet').value.trim();
-            const neighborhood = document.getElementById('hrNeighborhood').value.trim();
-            const zip = document.getElementById('hrZip').value.trim();
+            const materialType = document.getElementById('hrMaterialType').value;
+            let materialDescription = materialType;
+            
+            // Append description for Mixed/Other
+            if (materialType === 'Mixed' || materialType === 'Other') {
+                const desc = document.getElementById('hrDescription').value.trim();
+                materialDescription = materialType + ': ' + desc;
+            }
 
             const data = {
                 action: 'submit_household',
                 userId: currentUser.userId,
-                materialType: document.getElementById('hrMaterialType').value,
+                materialType: materialDescription,
                 weightLbs: parseFloat(document.getElementById('hrWeight').value) || 0,
                 destination: document.getElementById('hrDestination').value,
                 destinationOther: document.getElementById('hrDestOther').value.trim(),
-                streetAddress: street,
-                neighborhood: neighborhood,
-                zipCode: zip
+                streetAddress: currentUser.streetAddress || '',
+                neighborhood: currentUser.neighborhood || '',
+                zipCode: currentUser.zipCode || ''
             };
-
-            // Update local profile with location
-            if (street) currentUser.streetAddress = street;
-            if (neighborhood) currentUser.neighborhood = neighborhood;
-            if (zip) currentUser.zipCode = zip;
-            saveSession();
 
             try {
                 await fetch(APPS_SCRIPT_URL, {
@@ -1480,6 +1645,8 @@
 
         function resetHRForm() {
             document.getElementById('hrMaterialType').value = '';
+            document.getElementById('hrDescription').value = '';
+            document.getElementById('hrDescriptionWrap').style.display = 'none';
             document.getElementById('hrWeight').value = '';
             document.getElementById('hrDestination').value = '';
             document.getElementById('hrDestOther').value = '';
