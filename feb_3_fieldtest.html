@@ -410,6 +410,9 @@
                     totalWeight += collection.weight;
                     totalDistance += collection.distance;
                     
+                    // Safety check: gpsPaths might not exist or session might not have GPS data
+                    if (!data.gpsPaths || !data.gpsPaths[collection.sessionId]) return;
+                    
                     const path = data.gpsPaths[collection.sessionId];
                     if (!path || path.length === 0) return;
                     
