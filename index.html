@@ -324,6 +324,9 @@
                     </div>
                     
                     <h3 style="font-size: 15px; color: #1f2937; margin: 20px 0 12px;">Location (Optional)</h3>
+                    <div class="instructions" style="margin-bottom: 16px; font-size: 12px;">
+                        Your address, neighborhood, or zip code will be used for household recycling market research to support the case for expanded recycling infrastructure in Montgomery.
+                    </div>
                     <div class="form-group">
                         <label class="form-label">Street Address</label>
                         <input type="text" class="form-input" id="createStreet" placeholder="123 Main St">
@@ -361,18 +364,21 @@
                     You choose each session whether to appear in the public Activity Feed. Sessions you opt out of will not display your name or data publicly. The community map requires login to view.
 
                     <h4>Household Recycling</h4>
-                    Recycling logs are linked to your profile and include material type, estimated weight, and general location (street, neighborhood, or zip code — your choice). This data supports the case for expanded recycling infrastructure in Montgomery.
+                    Recycling logs are linked to your profile and include material type, estimated weight, and general location (street, neighborhood, or zip code). This data supports the case for expanded recycling infrastructure in Montgomery.
 
                     <h4>Contact</h4>
                     Questions about your data? Contact the CHIMERA project team through your organization.
                 </div>
 
-                <div class="safety-checkbox" style="margin-bottom: 20px;">
-                    <input type="checkbox" id="tcAccept">
-                    <label for="tcAccept">I have read and accept these terms</label>
+                <div class="instructions" style="margin: 20px 0;">
+                    <strong>To accept these terms, enter your PIN:</strong>
                 </div>
 
-                <button class="btn btn-primary" id="tcContinueBtn" disabled>Continue</button>
+                <div class="form-group">
+                    <input type="text" class="form-input" id="tcPIN" placeholder="Enter your PIN" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
+                </div>
+
+                <button class="btn btn-primary" id="tcContinueBtn" disabled>Accept & Continue</button>
             </div>
 
             <!-- ================================ -->
@@ -667,6 +673,17 @@
             <div id="recycleScreen" class="hidden">
                 <h2 style="font-size: 18px; margin-bottom: 16px; color: #1f2937;">♻️ Log Recycling</h2>
 
+                <!-- Info Dropdown -->
+                <div style="margin-bottom: 20px;">
+                    <div class="profile-edit-toggle" id="hrInfoToggle">ℹ️ For more information on recycling locally...</div>
+                    <div class="profile-edit-pane" id="hrInfoPane">
+                        <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">COMING SOON</h4>
+                        <p style="font-size: 13px; font-style: italic; color: #6b7280; line-height: 1.6;">
+                            Recycling in Montgomery is challenging. We're working to identify accessible alternatives for residents.
+                        </p>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Material Type</label>
                     <select class="form-select" id="hrMaterialType">
@@ -693,7 +710,15 @@
                     <label class="form-label">Estimated Weight (lbs)</label>
                     <input type="number" class="form-input" id="hrWeight" placeholder="0.0" step="0.1" min="0">
                     <div class="scale-tip">
-                        💡 <strong>No scale?</strong> Weigh yourself holding the bag, then without. Subtract.
+                        💡 <strong>No handheld scale?</strong> If you have a bathroom scale, weigh yourself holding the bag, then without. Subtract.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date Bagged/Sealed</label>
+                    <input type="date" class="form-input" id="hrDateBagged">
+                    <div class="scale-tip">
+                        The date you sealed the bag, even if you haven't dropped it off yet (e.g., allows for temporary storage before pickup/dropoff)
                     </div>
                 </div>
 
@@ -1057,7 +1082,8 @@
                         streetAddress: document.getElementById('createStreet').value.trim(),
                         neighborhood: document.getElementById('createNeighborhood').value.trim(),
                         zipCode: document.getElementById('createZip').value.trim(),
-                        tcAccepted: false
+                        tcAccepted: false,
+                        tempPIN: createPIN.value.trim().toLowerCase() // Store for T&C verification
                     };
                     saveSession();
                     showMessage('✓ Profile created!', 'success');
@@ -1179,14 +1205,23 @@
         // ==========================================
         // T&C SCREEN
         // ==========================================
-        const tcAccept = document.getElementById('tcAccept');
+        const tcPIN = document.getElementById('tcPIN');
         const tcContinueBtn = document.getElementById('tcContinueBtn');
 
-        tcAccept.addEventListener('change', () => {
-            tcContinueBtn.disabled = !tcAccept.checked;
+        tcPIN.addEventListener('input', () => {
+            const pinValue = tcPIN.value.trim().toLowerCase();
+            tcContinueBtn.disabled = pinValue.length !== 4 || !/^[a-z]{2}[0-9]{2}$/.test(pinValue);
         });
 
         tcContinueBtn.addEventListener('click', async function() {
+            const enteredPIN = tcPIN.value.trim().toLowerCase();
+            
+            // Verify PIN matches (it was stored temporarily in currentUser during profile creation)
+            if (enteredPIN !== currentUser.tempPIN) {
+                showMessage('Incorrect PIN. Please try again.', 'error');
+                return;
+            }
+
             tcContinueBtn.disabled = true;
             tcContinueBtn.textContent = 'Saving...';
 
@@ -1199,11 +1234,13 @@
             } catch (e) { /* best effort */ }
 
             currentUser.tcAccepted = true;
+            delete currentUser.tempPIN; // Remove temporary PIN
             saveSession();
             showMainScreen();
 
             tcContinueBtn.disabled = false;
-            tcContinueBtn.textContent = 'Continue';
+            tcContinueBtn.textContent = 'Accept & Continue';
+            tcPIN.value = '';
         });
 
         // ==========================================
@@ -1559,6 +1596,11 @@
             showScreen('recycleScreen');
         });
 
+        // HR info dropdown toggle
+        document.getElementById('hrInfoToggle').addEventListener('click', () => {
+            document.getElementById('hrInfoPane').classList.toggle('show');
+        });
+
         // HR material type - show/hide description field
         document.getElementById('hrMaterialType').addEventListener('change', function() {
             const needsDescription = this.value === 'Mixed' || this.value === 'Other';
@@ -1576,7 +1618,7 @@
         });
 
         // HR validation
-        ['hrMaterialType', 'hrDescription', 'hrWeight', 'hrDestination'].forEach(id => {
+        ['hrMaterialType', 'hrDescription', 'hrWeight', 'hrDateBagged', 'hrDestination'].forEach(id => {
             document.getElementById(id).addEventListener('input', validateHR);
             document.getElementById(id).addEventListener('change', validateHR);
         });
@@ -1590,9 +1632,10 @@
             const descriptionOk = !needsDescription || document.getElementById('hrDescription').value.trim() !== '';
             
             const weightOk = parseFloat(document.getElementById('hrWeight').value) > 0;
+            const dateOk = document.getElementById('hrDateBagged').value !== '';
             const destOk = document.getElementById('hrDestination').value !== '';
             
-            document.getElementById('submitHRBtn').disabled = !(materialOk && descriptionOk && weightOk && destOk);
+            document.getElementById('submitHRBtn').disabled = !(materialOk && descriptionOk && weightOk && dateOk && destOk);
         }
 
         document.getElementById('submitHRBtn').addEventListener('click', async function() {
@@ -1613,6 +1656,7 @@
                 userId: currentUser.userId,
                 materialType: materialDescription,
                 weightLbs: parseFloat(document.getElementById('hrWeight').value) || 0,
+                dateBagged: document.getElementById('hrDateBagged').value,
                 destination: document.getElementById('hrDestination').value,
                 destinationOther: document.getElementById('hrDestOther').value.trim(),
                 streetAddress: currentUser.streetAddress || '',
@@ -1648,6 +1692,7 @@
             document.getElementById('hrDescription').value = '';
             document.getElementById('hrDescriptionWrap').style.display = 'none';
             document.getElementById('hrWeight').value = '';
+            document.getElementById('hrDateBagged').value = '';
             document.getElementById('hrDestination').value = '';
             document.getElementById('hrDestOther').value = '';
             document.getElementById('hrDestOtherWrap').classList.remove('show');
