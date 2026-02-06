@@ -1041,6 +1041,7 @@
                         streetAddress: result.streetAddress || '',
                         neighborhood: result.neighborhood || '',
                         zipCode: result.zipCode || '',
+                        addressId: result.addressId || '',
                         tcAccepted: result.tcAccepted
                     };
                     saveSession();
@@ -1087,6 +1088,7 @@
                         streetAddress: document.getElementById('createStreet').value.trim(),
                         neighborhood: document.getElementById('createNeighborhood').value.trim(),
                         zipCode: document.getElementById('createZip').value.trim(),
+                        addressId: result.addressId || '',
                         tcAccepted: false,
                         tempPIN: createPIN.value.trim().toLowerCase() // Store for T&C verification
                     };
@@ -1658,14 +1660,12 @@
             const data = {
                 action: 'submit_household',
                 userId: currentUser.userId,
+                addressId: currentUser.addressId || '',
                 materialType: materialDescription,
                 weightLbs: parseFloat(document.getElementById('hrWeight').value) || 0,
                 dateBagged: document.getElementById('hrDateBagged').value,
                 destination: document.getElementById('hrDestination').value,
-                destinationOther: document.getElementById('hrDestOther').value.trim(),
-                streetAddress: currentUser.streetAddress || '',
-                neighborhood: currentUser.neighborhood || '',
-                zipCode: currentUser.zipCode || ''
+                destinationOther: document.getElementById('hrDestOther').value.trim()
             };
 
             try {
