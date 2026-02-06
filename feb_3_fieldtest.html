@@ -366,6 +366,8 @@
                 const response = await fetch(APPS_SCRIPT_URL);
                 const result = await response.json();
                 
+                console.log('API Response:', result);
+                
                 if (result.status !== 'success') {
                     throw new Error('Failed to load data');
                 }
@@ -375,10 +377,21 @@
                 let totalDistance = 0;
                 const bounds = [];
                 
+                console.log('Map data loaded:', {
+                    scouts: data.scouts.length,
+                    collections: data.collections.length,
+                    sampleScout: data.scouts[0]
+                });
+                
                 // Add scout markers with gradient coloring
+                let scoutsRendered = 0;
                 data.scouts.forEach(scout => {
-                    if (!scout.lat || !scout.lon) return;
+                    if (!scout.lat || !scout.lon) {
+                        console.log('Scout missing coordinates:', scout);
+                        return;
+                    }
                     
+                    scoutsRendered++;
                     const color = getGradientColor(scout.rating);
                     const size = getScoutSize(scout.rating);
                     
@@ -405,10 +418,12 @@
                     bounds.push([scout.lat, scout.lon]);
                 });
                 
+                console.log('Scouts rendered:', scoutsRendered, 'Bounds points:', bounds.length);
+                
                 // Add collection paths with gradient coloring based on √CPUE
                 data.collections.forEach(collection => {
-                    totalWeight += collection.weight;
-                    totalDistance += collection.distance;
+                    totalWeight += (collection.weight || 0);
+                    totalDistance += (collection.distance || 0);
                     
                     // Safety check: gpsPaths might not exist or session might not have GPS data
                     if (!data.gpsPaths || !data.gpsPaths[collection.sessionId]) return;
@@ -451,9 +466,15 @@
                 document.getElementById('totalWeight').textContent = totalWeight.toFixed(1) + ' lbs';
                 document.getElementById('totalDistance').textContent = totalDistance.toFixed(2) + ' mi';
                 
-                // Fit map to bounds
+                // Fit map to bounds or use default center
+                console.log('Final bounds length:', bounds.length);
                 if (bounds.length > 0) {
+                    console.log('Fitting to bounds:', bounds[0], '...', bounds[bounds.length-1]);
                     map.fitBounds(bounds, { padding: [50, 50] });
+                } else {
+                    console.log('No bounds, using default view');
+                    // No data - stay at Montgomery default view
+                    map.setView([32.356, -86.306], 13);
                 }
                 
                 // Hide loading, show stats
