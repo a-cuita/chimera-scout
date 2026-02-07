@@ -842,71 +842,163 @@
         // ==========================================
         // ACTIVITY FEED
         // ==========================================
-        async function loadActivityFeed() {
-            try {
-                const response = await fetch(APPS_SCRIPT_URL);
-                const result = await response.json();
+        // CLIENT HTML - Enhanced Activity Feed Rendering
 
-                if (result.status === 'success') {
-                    const data = result.data;
+async function loadActivityFeed() {
+    try {
+        const response = await fetch(APPS_SCRIPT_URL);
+        const result = await response.json();
 
-                    document.getElementById('sessionsToday').textContent = data.totalCollections;
-                    document.getElementById('unvalidatedScouts').textContent = data.unvalidatedScouts;
+        if (result.status === 'success') {
+            const data = result.data;
 
-                    const activityList = document.getElementById('activityList');
+            // Update stats
+            document.getElementById('sessionsToday').textContent = data.totalCollections;
+            document.getElementById('unvalidatedScouts').textContent = data.unvalidatedScouts;
 
-                    if (data.recentActivity.length === 0) {
-                        activityList.innerHTML = '<div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 20px;">No recent activity</div>';
-                    } else {
-                        let html = '';
-                        data.recentActivity.forEach(activity => {
-                            const timeAgo = getTimeAgo(new Date(activity.timestamp));
+            const activityList = document.getElementById('activityList');
 
-                            let itemHtml = '<div class="activity-item" style="padding: 12px 0;">';
-                            itemHtml += '<div style="font-weight: 600; color: #1f2937;">🗑️ ' + activity.volunteer + '</div>';
-                            itemHtml += '<div style="font-size: 12px; color: #6b7280; margin-top: 2px;">';
-                            itemHtml += 'collected ' + activity.weight.toFixed(1) + ' lbs';
-                            if (activity.sqrtCpue) {
-                                itemHtml += ' (√CPUE: ' + activity.sqrtCpue.toFixed(2) + ')';
+            if (data.recentActivity.length === 0) {
+                activityList.innerHTML = '<div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 20px;">No recent activity</div>';
+            } else {
+                let html = '';
+                data.recentActivity.forEach(activity => {
+                    
+                    // SPECIAL ITEM: Awaiting Validation
+                    if (activity.type === 'awaiting_validation') {
+                        const sinceTime = new Date(activity.since);
+                        const elapsed = getTimeElapsed(sinceTime);
+                        
+                        html += '<div class="activity-item" style="padding: 14px; background: #fef3c7; border: 2px solid #fbbf24; border-radius: 8px; margin-bottom: 12px;">';
+                        html += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">';
+                        html += '<span style="font-size: 20px;">⏳</span>';
+                        html += '<div style="font-weight: 700; color: #92400e; font-size: 15px;">';
+                        html += activity.count + ' litter rating' + (activity.count !== 1 ? 's' : '') + ' awaiting validation';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '<div style="font-size: 12px; color: #78350f; margin-left: 28px;">';
+                        html += 'Since ' + formatTime(sinceTime) + ' (' + elapsed + ')';
+                        html += '</div>';
+                        html += '</div>';
+                        return;
+                    }
+
+                    // SPECIAL ITEM: Daily Accuracy
+                    if (activity.type === 'daily_accuracy') {
+                        const accuracyColor = activity.accuracyPct >= 80 ? '#059669' : 
+                                             activity.accuracyPct >= 60 ? '#0284c7' : '#dc2626';
+                        
+                        html += '<div class="activity-item" style="padding: 14px; background: #f0f9f4; border: 2px solid #10b981; border-radius: 8px; margin-bottom: 12px;">';
+                        html += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">';
+                        html += '<span style="font-size: 20px;">📊</span>';
+                        html += '<div style="font-weight: 700; color: #065f46; font-size: 15px;">';
+                        html += 'Today\'s Scout Accuracy';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '<div style="margin-left: 28px;">';
+                        html += '<div style="font-size: 24px; font-weight: 700; color: ' + accuracyColor + ';">';
+                        html += activity.accuracyPct + '% spot on';
+                        html += '</div>';
+                        html += '<div style="font-size: 12px; color: #6b7280; margin-top: 2px;">';
+                        html += activity.spotOn + ' of ' + activity.total + ' scout' + (activity.total !== 1 ? 's' : '') + ' validated today';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '</div>';
+                        return;
+                    }
+
+                    // NORMAL ITEM: Collection
+                    if (activity.type === 'collection') {
+                        const timeAgo = getTimeAgo(new Date(activity.timestamp));
+
+                        let itemHtml = '<div class="activity-item" style="padding: 12px 0;">';
+                        itemHtml += '<div style="font-weight: 600; color: #1f2937;">🗑️ ' + activity.volunteer + '</div>';
+                        itemHtml += '<div style="font-size: 12px; color: #6b7280; margin-top: 2px;">';
+                        itemHtml += 'collected ' + activity.weight.toFixed(1) + ' lbs';
+                        
+                        if (activity.rating !== null && activity.rating !== undefined) {
+                            itemHtml += ', rated ' + activity.rating + '/10';
+                        }
+                        
+                        if (activity.sqrtCpue) {
+                            itemHtml += ' (√CPUE: ' + activity.sqrtCpue.toFixed(2) + ')';
+                        }
+                        itemHtml += ' — ' + timeAgo + '</div>';
+
+                        const val = activity.validation;
+                        const totalValidated = val.accurate.length + val.close.length + val.off.length;
+
+                        if (totalValidated > 0) {
+                            itemHtml += '<div style="margin-top: 8px; margin-left: 16px; padding: 8px; background: #f9fafb; border-radius: 6px; border-left: 3px solid #2D5F3F;">';
+                            itemHtml += '<div style="font-size: 11px; font-weight: 700; color: #2D5F3F; margin-bottom: 6px;">👀 SCOUT RATINGS VALIDATED 📈</div>';
+
+                            if (val.accurate.length > 0) {
+                                itemHtml += '<div style="font-size: 11px; color: #059669; margin-bottom: 3px;">';
+                                itemHtml += '<strong>Spot on:</strong> ' + val.accurate.join(', ') + '</div>';
                             }
-                            itemHtml += ' — ' + timeAgo + '</div>';
-
-                            const val = activity.validation;
-                            const totalValidated = val.accurate.length + val.close.length + val.off.length;
-
-                            if (totalValidated > 0) {
-                                itemHtml += '<div style="margin-top: 8px; margin-left: 16px; padding: 8px; background: #f9fafb; border-radius: 6px; border-left: 3px solid #2D5F3F;">';
-                                itemHtml += '<div style="font-size: 11px; font-weight: 700; color: #2D5F3F; margin-bottom: 6px;">👀 SCOUT RATINGS VALIDATED 📈</div>';
-
-                                if (val.accurate.length > 0) {
-                                    itemHtml += '<div style="font-size: 11px; color: #059669; margin-bottom: 3px;">';
-                                    itemHtml += '<strong>Spot on:</strong> ' + val.accurate.join(', ') + '</div>';
-                                }
-                                if (val.close.length > 0) {
-                                    itemHtml += '<div style="font-size: 11px; color: #0284c7; margin-bottom: 3px;">';
-                                    itemHtml += '<strong>Under:</strong> ' + val.close.join(', ') + '</div>';
-                                }
-                                if (val.off.length > 0) {
-                                    itemHtml += '<div style="font-size: 11px; color: #dc2626;">';
-                                    itemHtml += '<strong>Over:</strong> ' + val.off.join(', ') + '</div>';
-                                }
-
-                                itemHtml += '</div>';
-                            } else {
-                                itemHtml += '<div style="margin-top: 6px; margin-left: 16px; font-size: 11px; color: #9ca3af; font-style: italic;">No scouts validated</div>';
+                            if (val.close.length > 0) {
+                                itemHtml += '<div style="font-size: 11px; color: #0284c7; margin-bottom: 3px;">';
+                                itemHtml += '<strong>Under:</strong> ' + val.close.join(', ') + '</div>';
+                            }
+                            if (val.off.length > 0) {
+                                itemHtml += '<div style="font-size: 11px; color: #dc2626;">';
+                                itemHtml += '<strong>Over:</strong> ' + val.off.join(', ') + '</div>';
                             }
 
                             itemHtml += '</div>';
-                            html += itemHtml;
-                        });
-                        activityList.innerHTML = html;
+                        } else {
+                            itemHtml += '<div style="margin-top: 6px; margin-left: 16px; font-size: 11px; color: #9ca3af; font-style: italic;">No scouts validated</div>';
+                        }
+
+                        itemHtml += '</div>';
+                        html += itemHtml;
                     }
-                }
-            } catch (error) {
-                console.error('Activity feed error:', error);
-                document.getElementById('activityList').innerHTML = '<div style="text-align: center; color: #dc2626; font-size: 13px; padding: 20px;">Failed to load activity</div>';
+                });
+                activityList.innerHTML = html;
             }
         }
+    } catch (error) {
+        console.error('Activity feed error:', error);
+        document.getElementById('activityList').innerHTML = '<div style="text-align: center; color: #dc2626; font-size: 13px; padding: 20px;">Failed to load activity</div>';
+    }
+}
+
+// Helper: Format time as "3:45 PM"
+function formatTime(date) {
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    const mins = minutes < 10 ? '0' + minutes : minutes;
+    return hours + ':' + mins + ' ' + ampm;
+}
+
+// Helper: Get elapsed time in readable format
+function getTimeElapsed(sinceDate) {
+    const now = new Date();
+    const elapsed = now - sinceDate;
+    const seconds = Math.floor(elapsed / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) {
+        return hours + ' hour' + (hours !== 1 ? 's' : '') + ' ago';
+    } else if (minutes > 0) {
+        return minutes + ' min ago';
+    } else {
+        return 'just now';
+    }
+}
+
+// Existing helper function (keep this)
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return Math.floor(seconds / 60) + ' min ago';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + ' hr ago';
+    if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
+    return Math.floor(seconds / 604800) + ' weeks ago';
+}
 
         function getTimeAgo(date) {
             const seconds = Math.floor((new Date() - date) / 1000);
