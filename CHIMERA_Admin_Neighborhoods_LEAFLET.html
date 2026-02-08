@@ -396,10 +396,10 @@
         async function loadNeighborhoods() {
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'list_neighborhoods' })
-                });
+  method: 'POST',
+  headers: { 'Content-Type': 'text/plain' },  // Changed!
+  body: JSON.stringify({ action: 'list_neighborhoods' })
+});
                 
                 const result = await response.json();
                 
@@ -527,7 +527,7 @@
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
                         action: 'create_neighborhood',
                         name: name,
@@ -601,7 +601,7 @@
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
                         action: 'update_neighborhood',
                         neighborhoodId: selectedNeighborhood.neighborhoodId,
@@ -631,7 +631,7 @@
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
                         action: 'delete_neighborhood',
                         neighborhoodId: selectedNeighborhood.neighborhoodId
