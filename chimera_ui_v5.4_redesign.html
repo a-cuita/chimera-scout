@@ -1,0 +1,2472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>CHIMERA - Unified Tracking V5.4</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #F5F5F5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ==================== HEADER ==================== */
+        .header {
+            background: #2D5F3F;
+            color: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .hamburger {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px 8px;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+        .hamburger:hover { transform: scale(1.1); }
+        
+        .header-content { flex: 1; }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header .subtitle { font-size: 11px; opacity: 0.9; margin-top: 2px; }
+
+        /* ==================== HAMBURGER MENU ==================== */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .menu-overlay.show { display: block; opacity: 1; }
+        
+        .slide-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            z-index: 999;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+        }
+        .slide-menu.show { left: 0; }
+        
+        .menu-header {
+            background: #2D5F3F;
+            color: white;
+            padding: 20px 16px;
+        }
+        .menu-username {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .menu-edit {
+            font-size: 13px;
+            font-style: italic;
+            opacity: 0.9;
+            cursor: pointer;
+        }
+        .menu-edit:hover { text-decoration: underline; }
+        
+        .menu-section {
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .menu-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            color: #1f2937;
+            transition: background 0.2s;
+        }
+        .menu-item:hover { background: #f9fafb; }
+        .menu-item-icon { font-size: 20px; width: 24px; text-align: center; }
+        
+        .menu-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 8px 16px;
+        }
+
+        /* ==================== CONTENT ==================== */
+        .content {
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        /* ==================== TOAST NOTIFICATIONS ==================== */
+        .toast-container {
+            position: fixed;
+            top: 70px;
+            right: -350px;
+            width: 320px;
+            z-index: 1000;
+            transition: right 0.3s ease;
+        }
+        .toast-container.show { right: 16px; }
+        
+        .toast {
+            background: white;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid #10b981;
+        }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.warning { border-left-color: #f59e0b; }
+        
+        .toast-icon { font-size: 20px; }
+        .toast-message { flex: 1; font-size: 14px; color: #1f2937; font-weight: 500; }
+
+        /* ==================== SUN LOCKOUT ==================== */
+        .sun-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 500;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .sun-overlay.show { display: flex; }
+        
+        .sun-lockout-card {
+            background: #1e293b;
+            color: #f1f5f9;
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            max-width: 320px;
+            margin: 20px;
+        }
+        .sun-lockout-icon { font-size: 48px; margin-bottom: 16px; }
+        .sun-lockout-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .sun-lockout-detail { font-size: 14px; color: #94a3b8; line-height: 1.6; }
+        
+        .grey-alert {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #92400e;
+            text-align: center;
+        }
+        .grey-alert strong { display: block; font-size: 14px; margin-bottom: 4px; }
+
+        /* ==================== ACTIVITY FEED (SOCIAL STYLE) ==================== */
+        .activity-feed {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .feed-header {
+            padding: 16px;
+            border-bottom: 2px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        .feed-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .activity-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            background: white;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2D5F3F;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        
+        .feed-scroll {
+            height: 60vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .activity-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        
+        .activity-header {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+        .activity-volunteer {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .activity-time {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .activity-details {
+            color: #4b5563;
+        }
+        
+        .district-badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+        
+        .validation-box {
+            margin-top: 10px;
+            margin-left: 8px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 6px;
+            border-left: 3px solid #2D5F3F;
+        }
+        .validation-header {
+            font-size: 11px;
+            font-weight: 700;
+            color: #2D5F3F;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+        .validation-line {
+            font-size: 12px;
+            color: #4b5563;
+            margin-bottom: 3px;
+        }
+        .validation-line:last-child { margin-bottom: 0; }
+        .validation-line strong { color: #1f2937; }
+        
+        .spot-on { color: #059669; }
+        .close-rating { color: #0284c7; }
+        .off-rating { color: #dc2626; }
+
+        /* ==================== MODALS ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 2px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .modal-content {
+            padding: 20px;
+            line-height: 1.7;
+            font-size: 14px;
+            color: #374151;
+        }
+        .modal-content h4 {
+            font-size: 15px;
+            color: #1f2937;
+            margin: 16px 0 8px;
+        }
+        .modal-content h4:first-child { margin-top: 0; }
+        
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 2px solid #e5e7eb;
+            background: #f9fafb;
+            position: sticky;
+            bottom: 0;
+        }
+
+        /* ==================== BUTTONS ==================== */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #2D5F3F;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #234a31;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: white;
+            color: #2D5F3F;
+            border: 2px solid #2D5F3F;
+        }
+        .btn:disabled {
+            background: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ==================== FORMS ==================== */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #1f2937;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #2D5F3F;
+        }
+
+        /* ==================== UTILITY ==================== */
+        .hidden { display: none !important; }
+        
+        .instructions {
+            background: #f0f9f4;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #065f46;
+            line-height: 1.6;
+        }
+
+        /* Safety checkbox */
+        .safety-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            margin-top: 12px;
+        }
+        .safety-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .safety-checkbox label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f2937;
+            cursor: pointer;
+        }
+
+        /* PIN toggle */
+        .pin-input-wrapper { position: relative; }
+        .pin-input-wrapper input { padding-right: 45px; }
+        .pin-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: #6b7280;
+            user-select: none;
+        }
+        .pin-toggle:hover { color: #2D5F3F; }
+
+        /* Status box */
+        .status-box {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+        .status-label {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .status-value {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        /* Rating slider */
+        .rating-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #4CAF50, #FF9800, #F44336);
+            -webkit-appearance: none;
+            appearance: none;
+            outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #2D5F3F;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #2D5F3F;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .rating-value {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #2D5F3F;
+            margin-bottom: 6px;
+        }
+        .rating-description {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        /* Bags */
+        .bag-entry {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        .bag-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .bag-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .remove-bag {
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+        .add-bag-btn {
+            width: 100%;
+            padding: 10px;
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .add-bag-btn:hover {
+            border-color: #2D5F3F;
+            color: #2D5F3F;
+        }
+
+        /* Consent */
+        .consent-section {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+        .consent-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 12px;
+        }
+        .consent-question {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        .consent-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .consent-options {
+            display: flex;
+            gap: 16px;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .radio-option input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .radio-option label {
+            font-size: 13px;
+            color: #1f2937;
+            cursor: pointer;
+        }
+
+        /* Notes */
+        .notes-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1f2937;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+        .notes-textarea:focus {
+            outline: none;
+            border-color: #2D5F3F;
+        }
+        .char-counter {
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        /* Login cards */
+        .login-card {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .login-card h3 {
+            font-size: 16px;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .login-sub {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+        .login-toggle {
+            text-align: center;
+            font-size: 13px;
+            color: #2D5F3F;
+            cursor: pointer;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+        .login-toggle:hover { text-decoration: underline; }
+
+        /* Custom org input */
+        .custom-org-input {
+            margin-top: 12px;
+            display: none;
+        }
+        .custom-org-input.show { display: block; }
+    </style>
+</head>
+<body>
+    <!-- ==================== HAMBURGER MENU ==================== -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-username" id="menuUsername">Volunteer</div>
+            <div class="menu-edit" id="menuEditProfile">edit profile</div>
+        </div>
+        
+        <div class="menu-section">
+            <div class="menu-item" id="menuScout">
+                <span class="menu-item-icon">🔍</span>
+                <span>Rate Location</span>
+            </div>
+            <div class="menu-item" id="menuPin">
+                <span class="menu-item-icon">📍</span>
+                <span>Pin Location</span>
+            </div>
+            <div class="menu-item" id="menuTrack">
+                <span class="menu-item-icon">🗑️</span>
+                <span>Live Track: √CPUE</span>
+            </div>
+            <div class="menu-item" id="menuRecycle">
+                <span class="menu-item-icon">♻️</span>
+                <span>Recycle</span>
+            </div>
+        </div>
+        
+        <div class="menu-divider"></div>
+        
+        <div class="menu-section">
+            <div class="menu-item" id="menuFieldTest">
+                <span class="menu-item-icon">🗺️</span>
+                <span>View Field Test Map</span>
+            </div>
+            <div class="menu-item" id="menuDemo">
+                <span class="menu-item-icon">🐾</span>
+                <span>(DEMO) The Chimera Hunt</span>
+            </div>
+            <div class="menu-item" id="menuGettingStarted">
+                <span class="menu-item-icon">💡</span>
+                <span>Getting Started</span>
+            </div>
+        </div>
+        
+        <div class="menu-divider"></div>
+        
+        <div class="menu-section">
+            <div class="menu-item" id="menuLogout">
+                <span class="menu-item-icon">🚪</span>
+                <span>Log Out</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TOAST NOTIFICATIONS ==================== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ==================== SUN LOCKOUT OVERLAY ==================== -->
+    <div class="sun-overlay" id="sunOverlay">
+        <div class="sun-lockout-card">
+            <div class="sun-lockout-icon">🌙</div>
+            <div class="sun-lockout-title">Outdoor Tracking Unavailable</div>
+            <div class="sun-lockout-detail">
+                Scout & Collection modes are disabled after sunset for your safety.<br><br>
+                Next sunrise: <span id="lockoutSunrise">--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- ==================== HEADER ==================== -->
+        <div class="header">
+            <div class="hamburger hidden" id="hamburgerBtn">☰</div>
+            <div class="header-content">
+                <h1>🌍 CHIMERA Tracker</h1>
+                <div class="subtitle" id="headerSubtitle">Data Hub for Litter Scouting, Collecting & Recycling • V5.4</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- ==================== LOGIN SCREEN ==================== -->
+            <div id="loginScreen">
+                <div class="instructions" style="margin-bottom: 20px;">
+                    <strong>Welcome to CHIMERA!</strong><br>
+                    Log in or create a profile to start tracking. Your profile keeps your data linked across sessions.
+                </div>
+
+                <!-- LOGIN FORM -->
+                <div class="login-card" id="loginForm">
+                    <h3>🔑 Log In</h3>
+                    <div class="login-sub">Enter your handle and PIN</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Handle</label>
+                        <input type="text" class="form-input" id="loginHandle" placeholder="Your handle" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">PIN</label>
+                        <div class="pin-input-wrapper">
+                            <input type="password" class="form-input" id="loginPIN" placeholder="e.g. jb07" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
+                            <span class="pin-toggle" onclick="togglePIN('loginPIN', this)">👁️</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="loginBtn" disabled>Log In</button>
+                    <div style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 8px;">
+                        Forgot your PIN? Contact your organization lead to request a reset.
+                    </div>
+                    <div class="login-toggle" id="showCreateToggle">New here? Create a profile →</div>
+                </div>
+
+                <!-- CREATE PROFILE FORM -->
+                <div class="login-card hidden" id="createForm">
+                    <h3>📝 Create Profile</h3>
+                    <div class="login-sub">Choose a handle and PIN you'll remember</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Handle</label>
+                        <input type="text" class="form-input" id="createHandle" placeholder="Choose a handle (2+ characters)" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">PIN (2 letters + 2 numbers)</label>
+                        <div class="pin-input-wrapper">
+                            <input type="password" class="form-input" id="createPIN" placeholder="e.g. jb07" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
+                            <span class="pin-toggle" onclick="togglePIN('createPIN', this)">👁️</span>
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Format: two letters followed by two numbers (e.g. km23, jb07)</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Organization</label>
+                        <select class="form-select" id="createOrgSelect">
+                            <option value="">Select your organization</option>
+                            <option value="Baled It!">Baled It!</option>
+                            <option value="Help A Brother Out Foundation">Help A Brother Out Foundation</option>
+                            <option value="West Montgomery Action Committee">West Montgomery Action Committee</option>
+                            <option value="other">Add organization...</option>
+                        </select>
+                        <div class="custom-org-input" id="createCustomOrg">
+                            <input type="text" class="form-input" id="createCustomOrgText" placeholder="Enter organization name">
+                        </div>
+                    </div>
+                    
+                    <h3 style="font-size: 15px; color: #1f2937; margin: 20px 0 12px;">Location (Optional)</h3>
+                    <div class="instructions" style="margin-bottom: 16px; font-size: 12px;" id="createLocationHelp">
+                        Your address, neighborhood, or zip code will be used for household recycling market research.
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Street Address</label>
+                        <input type="text" class="form-input" id="createStreet" placeholder="123 Main St">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Neighborhood</label>
+                        <input type="text" class="form-input" id="createNeighborhood" placeholder="e.g. Cloverdale, Capitol Heights">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Zip Code</label>
+                        <input type="text" class="form-input" id="createZip" placeholder="36104" maxlength="5">
+                    </div>
+                    
+                    <button class="btn btn-primary" id="createProfileBtn" disabled>Create Profile</button>
+                    <div class="login-toggle" id="showLoginToggle">Already have a profile? Log in →</div>
+                </div>
+            </div>
+
+            <!-- ==================== MAIN SCREEN ==================== -->
+            <div id="mainScreen" class="hidden">
+                <!-- Grey Alert (shown when entering final window) -->
+                <div class="grey-alert hidden" id="greyAlert">
+                    <strong>⚠️ Final Collection Window</strong>
+                    You have approximately <span id="greyAlertMinutes">30</span> minutes of daylight remaining.
+                </div>
+
+                <!-- Activity Feed -->
+                <div class="activity-feed">
+                    <div class="feed-header">
+                        <div class="feed-title">
+                            <span>📊</span> Recent Activity
+                        </div>
+                        <div class="activity-stats">
+                            <div class="stat-card">
+                                <div class="stat-value" id="statCollections">-</div>
+                                <div class="stat-label">Collections</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="statAccuracy">-%</div>
+                                <div class="stat-label">Accuracy</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="statUnvalidated">-</div>
+                                <div class="stat-label">Unvalidated</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-scroll" id="feedScroll">
+                        <div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 20px;">
+                            Loading activity...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== SCOUT MODE ==================== -->
+            <div id="scoutScreen" class="hidden">
+                <div class="instructions">
+                    <strong>🔍 Rate Location</strong><br>
+                    Scout a location and rate the litter density. Your rating helps validate cleanup efforts.
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Litter Rating (0-10)</label>
+                    <div class="rating-value" id="scoutRatingValue">5</div>
+                    <div class="rating-description" id="scoutRatingDesc">Moderate litter</div>
+                    <div class="rating-scale">
+                        <span>0 - Clean</span>
+                        <span>5 - Moderate</span>
+                        <span>10 - Heavy</span>
+                    </div>
+                    <input type="range" class="slider" id="scoutRatingSlider" min="0" max="10" value="5" step="0.1">
+                </div>
+
+                <div class="status-box">
+                    <div class="status-row">
+                        <span class="status-label">GPS Status</span>
+                        <span class="status-value" id="scoutGPSStatus">Not tracking</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Distance</span>
+                        <span class="status-value" id="scoutDistance">0.00 mi</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Duration</span>
+                        <span class="status-value" id="scoutDuration">00:00</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="notes-textarea" id="scoutNotes" placeholder="e.g., Heavy concentration near storm drain" maxlength="500"></textarea>
+                    <div class="char-counter"><span id="scoutNotesCount">0</span>/500</div>
+                </div>
+
+                <button class="btn btn-primary" id="startScoutBtn">Start Scout</button>
+                <button class="btn btn-primary hidden" id="endScoutBtn">End Scout Session</button>
+                <button class="btn btn-secondary" id="cancelScoutBtn">Cancel</button>
+            </div>
+
+            <!-- ==================== PIN LOCATION ==================== -->
+            <div id="pinScreen" class="hidden">
+                <div class="instructions">
+                    <strong>📍 Pin Location</strong><br>
+                    Drop a pin at your current location to mark a point of interest.
+                </div>
+
+                <div class="status-box">
+                    <div class="status-row">
+                        <span class="status-label">GPS Status</span>
+                        <span class="status-value" id="pinGPSStatus">Getting location...</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Coordinates</span>
+                        <span class="status-value" id="pinCoords">--</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Pin Type</label>
+                    <select class="form-select" id="pinType">
+                        <option value="litter_hotspot">Litter Hotspot</option>
+                        <option value="hazard">Hazard</option>
+                        <option value="dumping_site">Illegal Dumping Site</option>
+                        <option value="needs_attention">Needs Attention</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="notes-textarea" id="pinDescription" placeholder="Describe what you found..." maxlength="500"></textarea>
+                    <div class="char-counter"><span id="pinDescCount">0</span>/500</div>
+                </div>
+
+                <button class="btn btn-primary" id="dropPinBtn" disabled>Drop Pin</button>
+                <button class="btn btn-secondary" id="cancelPinBtn">Cancel</button>
+            </div>
+
+            <!-- ==================== COLLECTION TRACKING ==================== -->
+            <div id="collectionScreen" class="hidden">
+                <div class="instructions">
+                    <strong>🗑️ Live Track: √CPUE</strong><br>
+                    Track your cleanup session with GPS. Record bags collected to calculate your efficiency score.
+                </div>
+
+                <div class="status-box">
+                    <div class="status-row">
+                        <span class="status-label">GPS Status</span>
+                        <span class="status-value tracking" id="collectionGPSStatus">Not tracking</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Distance</span>
+                        <span class="status-value" id="collectionDistance">0.00 mi</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Duration</span>
+                        <span class="status-value" id="collectionDuration">00:00</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Total Weight</span>
+                        <span class="status-value" id="collectionWeight">0.0 lbs</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">√CPUE</span>
+                        <span class="status-value" id="collectionCPUE">--</span>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 15px; color: #1f2937; margin: 20px 0 12px;">Bags Collected</h3>
+                <div id="bagsContainer"></div>
+                <button class="add-bag-btn" id="addBagBtn">+ Add Bag</button>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label class="form-label">Photos (Optional)</label>
+                    <input type="file" accept="image/*" capture="environment" multiple id="collectionPhotos" style="display: none;">
+                    <button class="btn btn-secondary" id="capturePhotoBtn">📷 Capture Photo</button>
+                    <div id="photoPreviewContainer" style="margin-top: 12px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="notes-textarea" id="collectionNotes" placeholder="e.g., Focused on roadside area" maxlength="500"></textarea>
+                    <div class="char-counter"><span id="collectionNotesCount">0</span>/500</div>
+                </div>
+
+                <div class="consent-section">
+                    <div class="consent-title">📊 Activity Feed & Map</div>
+                    <div class="consent-question">
+                        <label class="consent-label">Include my session in the Activity Feed?</label>
+                        <div style="font-size: 12px; color: #78350f; margin-bottom: 8px;">
+                            Your name and organization will be visible to logged-in users. Anonymous stats will appear on the public feed.
+                        </div>
+                        <div class="consent-options">
+                            <div class="radio-option">
+                                <input type="radio" id="consentFeedYes" name="consentFeed" value="yes">
+                                <label for="consentFeedYes">Yes</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="consentFeedNo" name="consentFeed" value="no">
+                                <label for="consentFeedNo">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="consent-question">
+                        <label class="consent-label">Allow photos to be used for educational purposes?</label>
+                        <div class="consent-options">
+                            <div class="radio-option">
+                                <input type="radio" id="consentPhotoYes" name="consentPhoto" value="yes">
+                                <label for="consentPhotoYes">Yes</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="consentPhotoNo" name="consentPhoto" value="no">
+                                <label for="consentPhotoNo">No</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="startCollectionBtn">Start Collection</button>
+                <button class="btn btn-primary hidden" id="endCollectionBtn">End Collection</button>
+                <button class="btn btn-secondary" id="cancelCollectionBtn">Cancel</button>
+            </div>
+
+            <!-- ==================== RECYCLE MODE ==================== -->
+            <div id="recycleScreen" class="hidden">
+                <div class="instructions">
+                    <strong>♻️ Log Household Recycling</strong><br>
+                    Track what you're recycling to support expanded recycling infrastructure.
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Material Type</label>
+                    <select class="form-select" id="recycleMaterial">
+                        <option value="">Select material</option>
+                        <option value="plastic">Plastic</option>
+                        <option value="glass">Glass</option>
+                        <option value="metal">Metal (aluminum, steel)</option>
+                        <option value="paper">Paper/Cardboard</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="mixed">Mixed Materials</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quantity</label>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                        <input type="number" class="form-input" id="recycleQuantity" placeholder="Amount" min="0" step="0.1">
+                        <select class="form-select" id="recycleUnit">
+                            <option value="lbs">lbs</option>
+                            <option value="bags">bags</option>
+                            <option value="items">items</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="notes-textarea" id="recycleNotes" placeholder="e.g., Weekly recycling pickup" maxlength="500"></textarea>
+                    <div class="char-counter"><span id="recycleNotesCount">0</span>/500</div>
+                </div>
+
+                <button class="btn btn-primary" id="submitRecycleBtn" disabled>Log Recycling</button>
+                <button class="btn btn-secondary" id="cancelRecycleBtn">Cancel</button>
+            </div>
+
+            <!-- ==================== EDIT PROFILE ==================== -->
+            <div id="editProfileScreen" class="hidden">
+                <div class="instructions">
+                    <strong>✏️ Edit Profile</strong><br>
+                    Update your profile information.
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Handle</label>
+                    <input type="text" class="form-input" id="editHandle" disabled style="background: #f3f4f6; color: #6b7280;">
+                    <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Handle cannot be changed</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Organization</label>
+                    <select class="form-select" id="editOrgSelect">
+                        <option value="Baled It!">Baled It!</option>
+                        <option value="Help A Brother Out Foundation">Help A Brother Out Foundation</option>
+                        <option value="West Montgomery Action Committee">West Montgomery Action Committee</option>
+                        <option value="other">Other...</option>
+                    </select>
+                    <div class="custom-org-input" id="editCustomOrg">
+                        <input type="text" class="form-input" id="editCustomOrgText" placeholder="Enter organization name">
+                    </div>
+                </div>
+
+                <h3 style="font-size: 15px; color: #1f2937; margin: 20px 0 12px;">Location (Optional)</h3>
+                <div class="form-group">
+                    <label class="form-label">Street Address</label>
+                    <input type="text" class="form-input" id="editStreet">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Neighborhood</label>
+                    <input type="text" class="form-input" id="editNeighborhood">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Zip Code</label>
+                    <input type="text" class="form-input" id="editZip" maxlength="5">
+                </div>
+
+                <button class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+                <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+    
+    <!-- Getting Started Modal -->
+    <div class="modal-overlay" id="gettingStartedModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">💡 Getting Started</div>
+            </div>
+            <div class="modal-content" id="gettingStartedContent">
+                <strong>Welcome to CHIMERA!</strong><br><br>
+                <p>Choose a mode to start tracking litter in your community:</p>
+                <h4>🔍 Rate Location</h4>
+                <p>Scout a location and rate the litter density on a scale of 0-10. Your ratings help validate cleanup efforts.</p>
+                <h4>🗑️ Live Track: √CPUE</h4>
+                <p>Track your cleanup session with GPS. Record weight collected and distance traveled to calculate your efficiency score.</p>
+                <h4>♻️ Recycle</h4>
+                <p>Log household recycling to support the case for expanded recycling infrastructure.</p>
+                <br>
+                <p><em>More tips and guidance coming soon!</em></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="closeGettingStarted">Got It</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Safety/Legal Modal -->
+    <div class="modal-overlay" id="safetyLegalModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">⚠️ Safety & Legal Information</div>
+            </div>
+            <div class="modal-content">
+                <h4>Safety Guidelines</h4>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li>Watch for traffic when crossing streets</li>
+                    <li>Wear gloves when handling litter</li>
+                    <li>Stay hydrated and take breaks as needed</li>
+                    <li>Work in pairs when possible</li>
+                    <li><strong>Do NOT operate a vehicle while tracking</strong></li>
+                    <li>Stay aware of your surroundings</li>
+                    <li>Watch for hazards (broken glass, sharp objects, wildlife)</li>
+                </ul>
+
+                <h4>Data Collection</h4>
+                <p>CHIMERA collects GPS location data, litter ratings, collection weights, and photos during tracking sessions. Location data is used to validate scout accuracy and display collection paths on the community map.</p>
+
+                <h4>Data Retention</h4>
+                <p>GPS coordinates are archived after validation and permanently deleted after 30 days. Simplified path geometry is retained indefinitely for map display. Photos are stored and retained indefinitely unless you request deletion.</p>
+
+                <h4>Your Profile</h4>
+                <p>Your handle and PIN are stored securely. Your PIN is hashed — we cannot see it. You may request account deletion at any time.</p>
+
+                <h4>Activity Feed & Map</h4>
+                <p>You choose each session whether to appear in the public Activity Feed. Sessions you opt out of will not display your name or data publicly.</p>
+
+                <h4>Liability</h4>
+                <p>By using CHIMERA, you acknowledge that you participate in cleanup activities at your own risk. Always prioritize your safety.</p>
+                
+                <div class="safety-checkbox">
+                    <input type="checkbox" id="safetyLegalAck">
+                    <label for="safetyLegalAck">I understand and agree to these terms</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="acceptSafetyLegal" disabled>Accept & Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // DEPLOYMENT CONFIGURATION
+        // ==========================================
+        const CONFIG = {
+            cityName: 'Montgomery',
+            stateName: 'Alabama',
+            timezone: 'America/Chicago',
+            
+            // API Endpoints
+            appsScriptUrl: 'https://script.google.com/macros/s/AKfycbysweOefC4Y8Ed4w_6OZzfDZ-vEoqZLqKRCboH9AivIZ_-jSbwkj70VXTRPP0jZJme0NA/exec',
+            
+            // Feature flags
+            features: {
+                districts: true,
+                sunsetLockout: true,
+                householdRecycling: true,
+                photoCapture: true,
+                scoutValidation: true
+            },
+            
+            // URLs
+            urls: {
+                fieldTestMap: 'feb_3_fieldtest.html',
+                demoGame: 'gone-feral.html'
+            },
+            
+            // GPS tracking
+            gpsInterval: 10000, // 10 seconds
+            
+            // Organizations (can be customized per deployment)
+            organizations: [
+                'Baled It!',
+                'Help A Brother Out Foundation',
+                'West Montgomery Action Committee'
+            ]
+        };
+
+        // Update dynamic text
+        document.getElementById('headerSubtitle').textContent = 
+            `Data Hub for Litter Scouting, Collecting & Recycling • V5.4`;
+        
+        document.getElementById('createLocationHelp').textContent = 
+            `Your address, neighborhood, or zip code will be used for household recycling market research to support the case for expanded recycling infrastructure in ${CONFIG.cityName}.`;
+
+        // ==========================================
+        // SESSION STATE
+        // ==========================================
+        let currentUser = {
+            userId: null,
+            handle: null,
+            organization: null,
+            streetAddress: '',
+            neighborhood: '',
+            zipCode: '',
+            safetyLegalAccepted: false,
+            lastSafetyLegalCheck: null
+        };
+
+        let sessionState = {
+            sessionId: null,
+            isTracking: false,
+            startTime: null,
+            gpsPoints: [],
+            photos: [],
+            totalDistance: 0,
+            mode: null
+        };
+
+        let bags = [];
+        let bagCounter = 0;
+        let sunLocked = false;
+        let greyAlert = false;
+
+        // ==========================================
+        // SESSION STORAGE
+        // ==========================================
+        function restoreSession() {
+            const saved = sessionStorage.getItem('chimera_user');
+            if (saved) {
+                try {
+                    currentUser = JSON.parse(saved);
+                    return true;
+                } catch (e) { return false; }
+            }
+            return false;
+        }
+
+        function saveSession() {
+            sessionStorage.setItem('chimera_user', JSON.stringify(currentUser));
+        }
+
+        function clearSession() {
+            currentUser = {
+                userId: null,
+                handle: null,
+                organization: null,
+                streetAddress: '',
+                neighborhood: '',
+                zipCode: '',
+                safetyLegalAccepted: false,
+                lastSafetyLegalCheck: null
+            };
+            sessionStorage.removeItem('chimera_user');
+        }
+
+        // ==========================================
+        // HAMBURGER MENU
+        // ==========================================
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const slideMenu = document.getElementById('slideMenu');
+
+        function openMenu() {
+            menuOverlay.classList.add('show');
+            slideMenu.classList.add('show');
+        }
+
+        function closeMenu() {
+            menuOverlay.classList.remove('show');
+            slideMenu.classList.remove('show');
+        }
+
+        hamburgerBtn.addEventListener('click', openMenu);
+        menuOverlay.addEventListener('click', closeMenu);
+
+        // Menu items
+        document.getElementById('menuEditProfile').addEventListener('click', () => {
+            closeMenu();
+            showEditProfile();
+        });
+
+        document.getElementById('menuScout').addEventListener('click', () => {
+            if (!sunLocked) {
+                closeMenu();
+                showScoutMode();
+            } else {
+                showToast('Scout mode unavailable after sunset', 'warning');
+            }
+        });
+
+        document.getElementById('menuPin').addEventListener('click', () => {
+            closeMenu();
+            showPinMode();
+        });
+
+        document.getElementById('menuTrack').addEventListener('click', () => {
+            if (!sunLocked) {
+                closeMenu();
+                showCollectionMode();
+            } else {
+                showToast('Collection mode unavailable after sunset', 'warning');
+            }
+        });
+
+        document.getElementById('menuRecycle').addEventListener('click', () => {
+            closeMenu();
+            showRecycleMode();
+        });
+
+        document.getElementById('menuFieldTest').addEventListener('click', () => {
+            window.location.href = CONFIG.urls.fieldTestMap;
+        });
+
+        document.getElementById('menuDemo').addEventListener('click', () => {
+            window.location.href = CONFIG.urls.demoGame;
+        });
+
+        document.getElementById('menuGettingStarted').addEventListener('click', () => {
+            closeMenu();
+            document.getElementById('gettingStartedModal').classList.add('show');
+        });
+
+        document.getElementById('menuLogout').addEventListener('click', () => {
+            if (confirm('Are you sure you want to log out?')) {
+                clearSession();
+                location.reload();
+            }
+        });
+
+        // ==========================================
+        // TOAST NOTIFICATIONS
+        // ==========================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : '⚠';
+            
+            toast.innerHTML = `
+                <div class="toast-icon">${icon}</div>
+                <div class="toast-message">${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            container.classList.add('show');
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    toast.remove();
+                    if (container.children.length === 0) {
+                        container.classList.remove('show');
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // ==========================================
+        // MODALS
+        // ==========================================
+        document.getElementById('closeGettingStarted').addEventListener('click', () => {
+            document.getElementById('gettingStartedModal').classList.remove('show');
+        });
+
+        document.getElementById('safetyLegalAck').addEventListener('change', function() {
+            document.getElementById('acceptSafetyLegal').disabled = !this.checked;
+        });
+
+        document.getElementById('acceptSafetyLegal').addEventListener('click', () => {
+            currentUser.safetyLegalAccepted = true;
+            currentUser.lastSafetyLegalCheck = new Date().toISOString();
+            saveSession();
+            document.getElementById('safetyLegalModal').classList.remove('show');
+            showToast('Safety guidelines acknowledged', 'success');
+        });
+
+        // ==========================================
+        // ACTIVITY FEED
+        // ==========================================
+        async function loadActivityFeed() {
+            try {
+                const response = await fetch(CONFIG.appsScriptUrl + '?action=getActivityFeed');
+                const result = await response.json();
+                
+                console.log('Activity feed loaded:', result.status);
+
+                if (result.status === 'success') {
+                    const data = result.data;
+
+                    // Update stats
+                    document.getElementById('statCollections').textContent = data.totalCollections || 0;
+                    document.getElementById('statUnvalidated').textContent = data.unvalidatedScouts || 0;
+                    
+                    // Calculate accuracy if available
+                    if (data.dailyAccuracy !== undefined) {
+                        document.getElementById('statAccuracy').textContent = data.dailyAccuracy + '%';
+                    } else {
+                        document.getElementById('statAccuracy').textContent = '-';
+                    }
+
+                    const feedScroll = document.getElementById('feedScroll');
+
+                    if (!data.recentActivity || data.recentActivity.length === 0) {
+                        feedScroll.innerHTML = '<div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 20px;">No recent activity</div>';
+                    } else {
+                        let html = '';
+                        
+                        data.recentActivity.forEach(activity => {
+                            if (activity.type === 'collection') {
+                                // Parse timestamp
+                                const activityTime = new Date(activity.timestamp);
+                                const timeStr = formatTimeHHMM(activityTime);
+                                
+                                // District badges
+                                let districtBadges = '';
+                                if (CONFIG.features.districts && activity.zones && activity.zones.length > 0) {
+                                    districtBadges = activity.zones.map(z => {
+                                        const num = z.replace('District ', '');
+                                        return `<span class="district-badge">[D${num}]</span>`;
+                                    }).join('');
+                                }
+                                
+                                html += '<div class="activity-item">';
+                                html += '<div class="activity-header">';
+                                html += `<span class="activity-volunteer">${activity.volunteer}</span>`;
+                                html += `<span class="activity-time">• ${timeStr}</span>`;
+                                html += '</div>';
+                                html += `<div class="activity-details">collected ${activity.weight.toFixed(1)} lbs ${districtBadges}</div>`;
+                                
+                                if (activity.organization) {
+                                    html += `<div style="font-size: 12px; color: #6b7280; margin-top: 2px;">${activity.organization}</div>`;
+                                }
+                                
+                                // Validation section (if validated)
+                                if (activity.validated && activity.divergence !== null) {
+                                    // For now, show simplified validation
+                                    // Full validation breakdown will come from enhanced endpoint
+                                    html += '<div class="validation-box">';
+                                    html += '<div class="validation-header">👀 SCOUT RATINGS VALIDATED (-hrs prior)</div>';
+                                    html += `<div class="validation-line">Divergence: ${activity.divergence > 0 ? '+' : ''}${activity.divergence.toFixed(2)}</div>`;
+                                    html += '</div>';
+                                }
+                                
+                                html += '</div>';
+                            }
+                        });
+                        
+                        feedScroll.innerHTML = html;
+                    }
+                } else {
+                    console.error('Activity feed error:', result.message);
+                }
+            } catch (error) {
+                console.error('Activity feed error:', error);
+                document.getElementById('feedScroll').innerHTML = 
+                    '<div style="text-align: center; color: #dc2626; font-size: 13px; padding: 40px 20px;">Failed to load activity. Check console.</div>';
+            }
+        }
+
+        function formatTimeHHMM(date) {
+            let hours = date.getHours();
+            const minutes = date.getMinutes();
+            const mins = minutes < 10 ? '0' + minutes : minutes;
+            return hours + ':' + mins;
+        }
+
+        // ==========================================
+        // SUN CHECK
+        // ==========================================
+        async function checkSunSchedule() {
+            try {
+                const response = await fetch(CONFIG.appsScriptUrl + '?action=sun_check');
+                const result = await response.json();
+                
+                console.log('Sun check result:', result);
+
+                if (result.status === 'success') {
+                    sunLocked = result.locked;
+
+                    if (sunLocked) {
+                        document.getElementById('sunOverlay').classList.add('show');
+                        document.getElementById('lockoutSunrise').textContent = result.tomorrowSunrise || '--:--';
+                    }
+                    
+                    // Grey alert logic (future: personalized timing)
+                    // For now, show 30 min before sunset
+                    greyAlert = false; // Will implement once we have per-user timing
+                } else {
+                    console.error('Sun check failed:', result.message);
+                }
+            } catch (error) {
+                console.error('Sun check error:', error);
+                // Don't block app on sun check failure - just log it
+            }
+        }
+
+        // ==========================================
+        // LOGIN / CREATE PROFILE
+        // ==========================================
+        const loginHandle = document.getElementById('loginHandle');
+        const loginPIN = document.getElementById('loginPIN');
+        const loginBtn = document.getElementById('loginBtn');
+        const createHandle = document.getElementById('createHandle');
+        const createPIN = document.getElementById('createPIN');
+        const createOrgSelect = document.getElementById('createOrgSelect');
+        const createCustomOrgText = document.getElementById('createCustomOrgText');
+        const createProfileBtn = document.getElementById('createProfileBtn');
+
+        document.getElementById('showCreateToggle').addEventListener('click', () => {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('createForm').classList.remove('hidden');
+        });
+
+        document.getElementById('showLoginToggle').addEventListener('click', () => {
+            document.getElementById('createForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        });
+
+        const PIN_REGEX = /^[a-zA-Z]{2}[0-9]{2}$/;
+
+        loginHandle.addEventListener('input', validateLogin);
+        loginPIN.addEventListener('input', validateLogin);
+        function validateLogin() {
+            loginBtn.disabled = !(loginHandle.value.trim().length >= 2 && PIN_REGEX.test(loginPIN.value.trim()));
+        }
+
+        createHandle.addEventListener('input', validateCreate);
+        createPIN.addEventListener('input', validateCreate);
+        createOrgSelect.addEventListener('change', function() {
+            document.getElementById('createCustomOrg').classList.toggle('show', this.value === 'other');
+            validateCreate();
+        });
+        createCustomOrgText.addEventListener('input', validateCreate);
+
+        function validateCreate() {
+            const handleOk = createHandle.value.trim().length >= 2;
+            const pinOk = PIN_REGEX.test(createPIN.value.trim());
+            const orgOk = createOrgSelect.value !== '' &&
+                         (createOrgSelect.value !== 'other' || createCustomOrgText.value.trim() !== '');
+            createProfileBtn.disabled = !(handleOk && pinOk && orgOk);
+        }
+
+        function togglePIN(inputId, toggleElement) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggleElement.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                toggleElement.textContent = '👁️';
+            }
+        }
+
+        loginBtn.addEventListener('click', async function() {
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+
+            try {
+                const loginData = {
+                    action: 'login',
+                    handle: loginHandle.value.trim(),
+                    pin: loginPIN.value.trim().toLowerCase()
+                };
+                
+                console.log('Attempting login with:', { handle: loginData.handle, pin: '***' });
+                console.log('Endpoint:', CONFIG.appsScriptUrl);
+                
+                const response = await fetch(CONFIG.appsScriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (result.status === 'success') {
+                    currentUser = {
+                        userId: result.userId,
+                        handle: result.handle,
+                        organization: result.organization,
+                        streetAddress: result.streetAddress || '',
+                        neighborhood: result.neighborhood || '',
+                        zipCode: result.zipCode || '',
+                        safetyLegalAccepted: result.safetyLegalAccepted || false,
+                        lastSafetyLegalCheck: result.lastSafetyLegalCheck || null
+                    };
+                    saveSession();
+                    enterApp();
+                } else {
+                    showToast(result.message || 'Login failed', 'error');
+                    console.error('Login failed:', result.message);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast('Connection error. Check console for details.', 'error');
+            }
+
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Log In';
+        });
+
+        createProfileBtn.addEventListener('click', async function() {
+            createProfileBtn.disabled = true;
+            createProfileBtn.textContent = 'Creating...';
+
+            const org = createOrgSelect.value === 'other'
+                ? createCustomOrgText.value.trim()
+                : createOrgSelect.value;
+
+            try {
+                const profileData = {
+                    action: 'create_profile',
+                    handle: createHandle.value.trim(),
+                    pin: createPIN.value.trim().toLowerCase(),
+                    organization: org,
+                    streetAddress: document.getElementById('createStreet').value.trim(),
+                    neighborhood: document.getElementById('createNeighborhood').value.trim(),
+                    zipCode: document.getElementById('createZip').value.trim()
+                };
+                
+                console.log('Creating profile:', { handle: profileData.handle, org: profileData.organization });
+                
+                const response = await fetch(CONFIG.appsScriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(profileData)
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    currentUser = {
+                        userId: result.userId,
+                        handle: result.handle,
+                        organization: org,
+                        streetAddress: profileData.streetAddress,
+                        neighborhood: profileData.neighborhood,
+                        zipCode: profileData.zipCode,
+                        safetyLegalAccepted: false,
+                        lastSafetyLegalCheck: null
+                    };
+                    saveSession();
+                    showToast('✓ Profile created!', 'success');
+                    enterApp();
+                } else {
+                    showToast(result.message || 'Creation failed', 'error');
+                    console.error('Create profile failed:', result.message);
+                }
+            } catch (error) {
+                console.error('Create profile error:', error);
+                showToast('Connection error. Check console for details.', 'error');
+            }
+
+            createProfileBtn.disabled = false;
+            createProfileBtn.textContent = 'Create Profile';
+        });
+
+        // ==========================================
+        // APP ENTRY
+        // ==========================================
+        function enterApp() {
+            // Check if safety/legal needs acknowledgement (weekly)
+            const needsCheck = !currentUser.safetyLegalAccepted || 
+                              !currentUser.lastSafetyLegalCheck ||
+                              (new Date() - new Date(currentUser.lastSafetyLegalCheck)) > 7 * 24 * 60 * 60 * 1000;
+            
+            if (needsCheck) {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('safetyLegalModal').classList.add('show');
+            } else {
+                showMainScreen();
+            }
+        }
+
+        function showMainScreen() {
+            hideAllScreens();
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainScreen').classList.remove('hidden');
+            document.getElementById('menuUsername').textContent = currentUser.handle;
+            
+            // Show hamburger menu
+            document.getElementById('hamburgerBtn').classList.remove('hidden');
+            
+            loadActivityFeed();
+            checkSunSchedule();
+            
+            // Auto-refresh feed every minute (only set once)
+            if (!window.feedRefreshInterval) {
+                window.feedRefreshInterval = setInterval(loadActivityFeed, 60000);
+            }
+        }
+
+        // ==========================================
+        // SCREEN NAVIGATION
+        // ==========================================
+        function hideAllScreens() {
+            document.getElementById('mainScreen').classList.add('hidden');
+            document.getElementById('scoutScreen').classList.add('hidden');
+            document.getElementById('pinScreen').classList.add('hidden');
+            document.getElementById('collectionScreen').classList.add('hidden');
+            document.getElementById('recycleScreen').classList.add('hidden');
+            document.getElementById('editProfileScreen').classList.add('hidden');
+        }
+
+        // ==========================================
+        // SCOUT MODE
+        // ==========================================
+        let scoutInterval = null;
+        let scoutStartTime = null;
+
+        function showScoutMode() {
+            hideAllScreens();
+            document.getElementById('scoutScreen').classList.remove('hidden');
+            
+            // Reset
+            document.getElementById('scoutRatingSlider').value = 5;
+            updateScoutRating();
+            document.getElementById('scoutNotes').value = '';
+            document.getElementById('scoutNotesCount').textContent = '0';
+            sessionState = { sessionId: null, isTracking: false, startTime: null, gpsPoints: [], photos: [], totalDistance: 0, mode: 'scout' };
+        }
+
+        document.getElementById('scoutRatingSlider').addEventListener('input', updateScoutRating);
+        function updateScoutRating() {
+            const value = parseFloat(document.getElementById('scoutRatingSlider').value);
+            document.getElementById('scoutRatingValue').textContent = value.toFixed(1);
+            
+            let desc = '';
+            if (value <= 2) desc = 'Clean/Minimal litter';
+            else if (value <= 4) desc = 'Light litter';
+            else if (value <= 6) desc = 'Moderate litter';
+            else if (value <= 8) desc = 'Heavy litter';
+            else desc = 'Severe litter';
+            document.getElementById('scoutRatingDesc').textContent = desc;
+        }
+
+        document.getElementById('scoutNotes').addEventListener('input', function() {
+            document.getElementById('scoutNotesCount').textContent = this.value.length;
+        });
+
+        document.getElementById('startScoutBtn').addEventListener('click', async function() {
+            sessionState.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            sessionState.isTracking = true;
+            sessionState.startTime = new Date();
+            sessionState.mode = 'scout-only';
+            scoutStartTime = Date.now();
+            
+            document.getElementById('startScoutBtn').classList.add('hidden');
+            document.getElementById('endScoutBtn').classList.remove('hidden');
+            document.getElementById('scoutRatingSlider').disabled = true;
+            
+            // Start GPS tracking
+            if (navigator.geolocation) {
+                document.getElementById('scoutGPSStatus').textContent = 'Tracking...';
+                watchScoutGPS();
+            }
+            
+            showToast('Scout session started', 'success');
+        });
+
+        function watchScoutGPS() {
+            if (!sessionState.isTracking) return;
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    sessionState.gpsPoints.push({
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // Calculate distance
+                    if (sessionState.gpsPoints.length > 1) {
+                        const last = sessionState.gpsPoints[sessionState.gpsPoints.length - 2];
+                        const curr = sessionState.gpsPoints[sessionState.gpsPoints.length - 1];
+                        sessionState.totalDistance += calculateDistance(last.lat, last.lon, curr.lat, curr.lon);
+                    }
+                    
+                    document.getElementById('scoutDistance').textContent = sessionState.totalDistance.toFixed(2) + ' mi';
+                    
+                    // Update duration
+                    const elapsed = Math.floor((Date.now() - scoutStartTime) / 1000);
+                    const mins = Math.floor(elapsed / 60);
+                    const secs = elapsed % 60;
+                    document.getElementById('scoutDuration').textContent = 
+                        (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+                    
+                    setTimeout(watchScoutGPS, CONFIG.gpsInterval);
+                },
+                (error) => {
+                    console.error('GPS error:', error);
+                    document.getElementById('scoutGPSStatus').textContent = 'GPS error';
+                }
+            );
+        }
+
+        document.getElementById('endScoutBtn').addEventListener('click', async function() {
+            if (sessionState.gpsPoints.length === 0) {
+                showToast('No GPS data recorded', 'error');
+                return;
+            }
+            
+            this.disabled = true;
+            this.textContent = 'Submitting...';
+            
+            const rating = parseFloat(document.getElementById('scoutRatingSlider').value);
+            const notes = document.getElementById('scoutNotes').value.trim();
+            const duration = Math.floor((Date.now() - scoutStartTime) / 1000);
+            
+            try {
+                const submitData = {
+                    action: 'submit_session',
+                    sessionId: sessionState.sessionId,
+                    mode: 'scout-only',
+                    userId: currentUser.userId,
+                    handle: currentUser.handle,
+                    organization: currentUser.organization,
+                    startLat: sessionState.gpsPoints[0].lat,
+                    startLon: sessionState.gpsPoints[0].lon,
+                    endLat: sessionState.gpsPoints[sessionState.gpsPoints.length - 1].lat,
+                    endLon: sessionState.gpsPoints[sessionState.gpsPoints.length - 1].lon,
+                    rating: rating,
+                    duration: duration,
+                    distance: sessionState.totalDistance,
+                    notes: notes,
+                    photoCount: 0,
+                    gpsPoints: JSON.stringify(sessionState.gpsPoints),
+                    activityFeedConsent: 'yes',
+                    photoConsent: 'no'
+                };
+                
+                const response = await fetch(CONFIG.appsScriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(submitData)
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showToast('✓ Scout session submitted!', 'success');
+                    sessionState.isTracking = false;
+                    setTimeout(() => showMainScreen(), 1000);
+                } else {
+                    showToast(result.message || 'Submission failed', 'error');
+                }
+            } catch (error) {
+                console.error('Submit error:', error);
+                showToast('Connection error. Please try again.', 'error');
+            }
+            
+            this.disabled = false;
+            this.textContent = 'End Scout Session';
+        });
+
+        document.getElementById('cancelScoutBtn').addEventListener('click', () => {
+            if (sessionState.isTracking) {
+                if (confirm('Cancel this scout session? GPS data will be lost.')) {
+                    sessionState.isTracking = false;
+                    showMainScreen();
+                }
+            } else {
+                showMainScreen();
+            }
+        });
+
+        // ==========================================
+        // PIN LOCATION MODE
+        // ==========================================
+        let pinCoordinates = null;
+
+        function showPinMode() {
+            hideAllScreens();
+            document.getElementById('pinScreen').classList.remove('hidden');
+            
+            document.getElementById('pinType').value = '';
+            document.getElementById('pinDescription').value = '';
+            document.getElementById('pinDescCount').textContent = '0';
+            document.getElementById('dropPinBtn').disabled = true;
+            pinCoordinates = null;
+            
+            // Get current location
+            document.getElementById('pinGPSStatus').textContent = 'Getting location...';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    pinCoordinates = {
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude
+                    };
+                    document.getElementById('pinGPSStatus').textContent = 'Location acquired';
+                    document.getElementById('pinCoords').textContent = 
+                        pinCoordinates.lat.toFixed(6) + ', ' + pinCoordinates.lon.toFixed(6);
+                    validatePin();
+                },
+                (error) => {
+                    document.getElementById('pinGPSStatus').textContent = 'GPS error';
+                    showToast('Could not get GPS location', 'error');
+                }
+            );
+        }
+
+        document.getElementById('pinType').addEventListener('change', validatePin);
+        document.getElementById('pinDescription').addEventListener('input', function() {
+            document.getElementById('pinDescCount').textContent = this.value.length;
+            validatePin();
+        });
+
+        function validatePin() {
+            const typeOk = document.getElementById('pinType').value !== '';
+            const descOk = document.getElementById('pinDescription').value.trim().length >= 10;
+            const gpsOk = pinCoordinates !== null;
+            document.getElementById('dropPinBtn').disabled = !(typeOk && descOk && gpsOk);
+        }
+
+        document.getElementById('dropPinBtn').addEventListener('click', async function() {
+            this.disabled = true;
+            this.textContent = 'Dropping pin...';
+            
+            try {
+                const pinData = {
+                    action: 'drop_pin',
+                    userId: currentUser.userId,
+                    handle: currentUser.handle,
+                    organization: currentUser.organization,
+                    pinType: document.getElementById('pinType').value,
+                    description: document.getElementById('pinDescription').value.trim(),
+                    latitude: pinCoordinates.lat,
+                    longitude: pinCoordinates.lon,
+                    timestamp: new Date().toISOString()
+                };
+                
+                const response = await fetch(CONFIG.appsScriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(pinData)
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showToast('✓ Pin dropped successfully!', 'success');
+                    setTimeout(() => showMainScreen(), 1000);
+                } else {
+                    showToast(result.message || 'Failed to drop pin', 'error');
+                }
+            } catch (error) {
+                console.error('Pin error:', error);
+                showToast('Connection error. Please try again.', 'error');
+            }
+            
+            this.disabled = false;
+            this.textContent = 'Drop Pin';
+        });
+
+        document.getElementById('cancelPinBtn').addEventListener('click', () => showMainScreen());
+
+        // ==========================================
+        // COLLECTION TRACKING MODE
+        // ==========================================
+        let collectionInterval = null;
+        let collectionStartTime = null;
+
+        function showCollectionMode() {
+            hideAllScreens();
+            document.getElementById('collectionScreen').classList.remove('hidden');
+            
+            // Reset state
+            sessionState = { sessionId: null, isTracking: false, startTime: null, gpsPoints: [], photos: [], totalDistance: 0, mode: 'collection' };
+            bags = [];
+            bagCounter = 0;
+            document.getElementById('bagsContainer').innerHTML = '';
+            document.getElementById('collectionNotes').value = '';
+            document.getElementById('collectionNotesCount').textContent = '0';
+            document.getElementById('consentFeedYes').checked = false;
+            document.getElementById('consentFeedNo').checked = false;
+            document.getElementById('consentPhotoYes').checked = false;
+            document.getElementById('consentPhotoNo').checked = false;
+            document.getElementById('photoPreviewContainer').innerHTML = '';
+        }
+
+        document.getElementById('addBagBtn').addEventListener('click', addBag);
+
+        function addBag() {
+            bagCounter++;
+            const bagId = 'bag_' + bagCounter;
+            bags.push({ id: bagId, weight: 0 });
+            renderBags();
+        }
+
+        function renderBags() {
+            const container = document.getElementById('bagsContainer');
+            container.innerHTML = '';
+            
+            bags.forEach((bag, index) => {
+                const bagDiv = document.createElement('div');
+                bagDiv.className = 'bag-entry';
+                bagDiv.innerHTML = `
+                    <div class="bag-header">
+                        <span class="bag-number">Bag ${index + 1}</span>
+                        <span class="remove-bag" onclick="removeBag('${bag.id}')">Remove</span>
+                    </div>
+                    <input type="number" class="form-input" placeholder="Weight (lbs)" min="0" step="0.1" 
+                           value="${bag.weight}" onchange="updateBagWeight('${bag.id}', this.value)">
+                `;
+                container.appendChild(bagDiv);
+            });
+            
+            updateTotalWeight();
+        }
+
+        window.removeBag = function(bagId) {
+            bags = bags.filter(b => b.id !== bagId);
+            renderBags();
+        };
+
+        window.updateBagWeight = function(bagId, weight) {
+            const bag = bags.find(b => b.id === bagId);
+            if (bag) {
+                bag.weight = parseFloat(weight) || 0;
+                updateTotalWeight();
+            }
+        };
+
+        function updateTotalWeight() {
+            const total = bags.reduce((sum, bag) => sum + bag.weight, 0);
+            document.getElementById('collectionWeight').textContent = total.toFixed(1) + ' lbs';
+            
+            // Update CPUE if tracking
+            if (sessionState.isTracking && sessionState.totalDistance > 0) {
+                const cpue = total / sessionState.totalDistance;
+                const sqrtCpue = Math.sqrt(cpue);
+                document.getElementById('collectionCPUE').textContent = sqrtCpue.toFixed(2);
+            }
+        }
+
+        document.getElementById('collectionNotes').addEventListener('input', function() {
+            document.getElementById('collectionNotesCount').textContent = this.value.length;
+        });
+
+        document.getElementById('capturePhotoBtn').addEventListener('click', () => {
+            document.getElementById('collectionPhotos').click();
+        });
+
+        document.getElementById('collectionPhotos').addEventListener('change', function(e) {
+            sessionState.photos = Array.from(e.target.files);
+            renderPhotoPreview();
+        });
+
+        function renderPhotoPreview() {
+            const container = document.getElementById('photoPreviewContainer');
+            if (sessionState.photos.length === 0) {
+                container.innerHTML = '';
+            } else {
+                container.innerHTML = `<div style="font-size: 13px; color: #6b7280;">${sessionState.photos.length} photo(s) captured</div>`;
+            }
+        }
+
+        document.getElementById('startCollectionBtn').addEventListener('click', async function() {
+            if (!document.getElementById('consentFeedYes').checked && !document.getElementById('consentFeedNo').checked) {
+                showToast('Please answer activity feed consent question', 'warning');
+                return;
+            }
+            if (sessionState.photos.length > 0 && 
+                !document.getElementById('consentPhotoYes').checked && 
+                !document.getElementById('consentPhotoNo').checked) {
+                showToast('Please answer photo consent question', 'warning');
+                return;
+            }
+            
+            sessionState.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            sessionState.isTracking = true;
+            sessionState.startTime = new Date();
+            collectionStartTime = Date.now();
+            
+            document.getElementById('startCollectionBtn').classList.add('hidden');
+            document.getElementById('endCollectionBtn').classList.remove('hidden');
+            
+            // Start GPS tracking
+            if (navigator.geolocation) {
+                document.getElementById('collectionGPSStatus').textContent = 'Tracking...';
+                watchCollectionGPS();
+            }
+            
+            showToast('Collection started - track your cleanup!', 'success');
+        });
+
+        function watchCollectionGPS() {
+            if (!sessionState.isTracking) return;
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    sessionState.gpsPoints.push({
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // Calculate distance
+                    if (sessionState.gpsPoints.length > 1) {
+                        const last = sessionState.gpsPoints[sessionState.gpsPoints.length - 2];
+                        const curr = sessionState.gpsPoints[sessionState.gpsPoints.length - 1];
+                        sessionState.totalDistance += calculateDistance(last.lat, last.lon, curr.lat, curr.lon);
+                    }
+                    
+                    document.getElementById('collectionDistance').textContent = sessionState.totalDistance.toFixed(2) + ' mi';
+                    updateTotalWeight(); // Recalc CPUE
+                    
+                    // Update duration
+                    const elapsed = Math.floor((Date.now() - collectionStartTime) / 1000);
+                    const mins = Math.floor(elapsed / 60);
+                    const secs = elapsed % 60;
+                    document.getElementById('collectionDuration').textContent = 
+                        (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+                    
+                    setTimeout(watchCollectionGPS, CONFIG.gpsInterval);
+                },
+                (error) => {
+                    console.error('GPS error:', error);
+                    document.getElementById('collectionGPSStatus').textContent = 'GPS error';
+                }
+            );
+        }
+
+        document.getElementById('endCollectionBtn').addEventListener('click', async function() {
+            if (sessionState.gpsPoints.length === 0) {
+                showToast('No GPS data recorded', 'error');
+                return;
+            }
+            if (bags.length === 0) {
+                showToast('Please add at least one bag', 'error');
+                return;
+            }
+            
+            const totalWeight = bags.reduce((sum, bag) => sum + bag.weight, 0);
+            if (totalWeight === 0) {
+                showToast('Please enter bag weights', 'error');
+                return;
+            }
+            
+            this.disabled = true;
+            this.textContent = 'Submitting...';
+            
+            const duration = Math.floor((Date.now() - collectionStartTime) / 1000);
+            const notes = document.getElementById('collectionNotes').value.trim();
+            const activityFeedConsent = document.getElementById('consentFeedYes').checked ? 'yes' : 'no';
+            const photoConsent = document.getElementById('consentPhotoYes').checked ? 'yes' : 'no';
+            
+            try {
+                const submitData = {
+                    action: 'submit_session',
+                    sessionId: sessionState.sessionId,
+                    mode: 'collection',
+                    userId: currentUser.userId,
+                    handle: currentUser.handle,
+                    organization: currentUser.organization,
+                    startLat: sessionState.gpsPoints[0].lat,
+                    startLon: sessionState.gpsPoints[0].lon,
+                    endLat: sessionState.gpsPoints[sessionState.gpsPoints.length - 1].lat,
+                    endLon: sessionState.gpsPoints[sessionState.gpsPoints.length - 1].lon,
+                    weight: totalWeight,
+                    bagCount: bags.length,
+                    duration: duration,
+                    distance: sessionState.totalDistance,
+                    notes: notes,
+                    photoCount: sessionState.photos.length,
+                    gpsPoints: JSON.stringify(sessionState.gpsPoints),
+                    activityFeedConsent: activityFeedConsent,
+                    photoConsent: photoConsent
+                };
+                
+                const response = await fetch(CONFIG.appsScriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(submitData)
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showToast('✓ Collection submitted!', 'success');
+                    sessionState.isTracking = false;
+                    setTimeout(() => showMainScreen(), 1000);
+                } else {
+                    showToast(result.message || 'Submission failed', 'error');
+                }
+            } catch (error) {
+                console.error('Submit error:', error);
+                showToast('Connection error. Please try again.', 'error');
+            }
+            
+            this.disabled = false;
+            this.textContent = 'End Collection';
+        });
+
+        document.getElementById('cancelCollectionBtn').addEventListener('click', () => {
+            if (sessionState.isTracking) {
+                if (confirm('Cancel this collection? All data will be lost.')) {
+                    sessionState.isTracking = false;
+                    showMainScreen();
+                }
+            } else {
+                showMainScreen();
+            }
+        });
+
+        // ==========================================
+        // RECYCLE MODE
+        // ==========================================
+        function showRecycleMode() {
+            hideAllScreens();
+            document.getElementById('recycleScreen').classList.remove('hidden');
+            
+            document.getElementById('recycleMaterial').value = '';
+            document.getElementById('recycleQuantity').value = '';
+            document.getElementById('recycleUnit').value = 'lbs';
+            document.getElementById('recycleNotes').value = '';
+            document.getElementById('recycleNotesCount').textContent = '0';
+            document.getElementById('submitRecycleBtn').disabled = true;
+        }
+
+        document.getElementById('recycleMaterial').addEventListener('change', validateRecycle);
+        document.getElementById('recycleQuantity').addEventListener('input', validateRecycle);
+
+        function validateRecycle() {
+            const materialOk = document.getElementById('recycleMaterial').value !== '';
+            const quantityOk = parseFloat(document.getElementById('recycleQuantity').value) > 0;
+            document.getElementById('submitRecycleBtn').disabled = !(materialOk && quantityOk);
+        }
+
+        document.getElementById('recycleNotes').addEventListener('input', function() {
+            document.getElementById('recycleNotesCount').textContent = this.value.length;
+        });
+
+        document.getElementById('submitRecycleBtn').addEventListener('click', async function() {
+            this.disabled = true;
+            this.textContent = 'Submitting...';
+            
+            try {
+                const recycleData = {
+                    action: 'log_recycling',
+                    userId: currentUser.userId,
+                    handle: currentUser.handle,
+                    streetAddress: currentUser.streetAddress,
+                    neighborhood: currentUser.neighborhood,
+                    zipCode: currentUser.zipCode,
+                    material: document.getElementById('recycleMaterial').value,
+                    quantity: parseFloat(document.getElementById('recycleQuantity').value),
+                    unit: document.getElementById('recycleUnit').value,
+                    notes: document.getElementById('recycleNotes').value.trim(),
+                    timestamp: new Date().toISOString()
+                };
+                
+                const response = await fetch(CONFIG.appsScriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(recycleData)
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showToast('✓ Recycling logged!', 'success');
+                    setTimeout(() => showMainScreen(), 1000);
+                } else {
+                    showToast(result.message || 'Failed to log recycling', 'error');
+                }
+            } catch (error) {
+                console.error('Recycle error:', error);
+                showToast('Connection error. Please try again.', 'error');
+            }
+            
+            this.disabled = false;
+            this.textContent = 'Log Recycling';
+        });
+
+        document.getElementById('cancelRecycleBtn').addEventListener('click', () => showMainScreen());
+
+        // ==========================================
+        // EDIT PROFILE
+        // ==========================================
+        function showEditProfile() {
+            hideAllScreens();
+            document.getElementById('editProfileScreen').classList.remove('hidden');
+            
+            // Populate current values
+            document.getElementById('editHandle').value = currentUser.handle;
+            
+            // Set organization
+            const orgSelect = document.getElementById('editOrgSelect');
+            if (CONFIG.organizations.includes(currentUser.organization)) {
+                orgSelect.value = currentUser.organization;
+            } else {
+                orgSelect.value = 'other';
+                document.getElementById('editCustomOrg').classList.add('show');
+                document.getElementById('editCustomOrgText').value = currentUser.organization;
+            }
+            
+            document.getElementById('editStreet').value = currentUser.streetAddress || '';
+            document.getElementById('editNeighborhood').value = currentUser.neighborhood || '';
+            document.getElementById('editZip').value = currentUser.zipCode || '';
+        }
+
+        document.getElementById('editOrgSelect').addEventListener('change', function() {
+            document.getElementById('editCustomOrg').classList.toggle('show', this.value === 'other');
+        });
+
+        document.getElementById('saveProfileBtn').addEventListener('click', async function() {
+            this.disabled = true;
+            this.textContent = 'Saving...';
+            
+            const org = document.getElementById('editOrgSelect').value === 'other'
+                ? document.getElementById('editCustomOrgText').value.trim()
+                : document.getElementById('editOrgSelect').value;
+            
+            try {
+                const updateData = {
+                    action: 'update_profile',
+                    userId: currentUser.userId,
+                    organization: org,
+                    streetAddress: document.getElementById('editStreet').value.trim(),
+                    neighborhood: document.getElementById('editNeighborhood').value.trim(),
+                    zipCode: document.getElementById('editZip').value.trim()
+                };
+                
+                const response = await fetch(CONFIG.appsScriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    currentUser.organization = org;
+                    currentUser.streetAddress = updateData.streetAddress;
+                    currentUser.neighborhood = updateData.neighborhood;
+                    currentUser.zipCode = updateData.zipCode;
+                    saveSession();
+                    showToast('✓ Profile updated!', 'success');
+                    setTimeout(() => showMainScreen(), 1000);
+                } else {
+                    showToast(result.message || 'Update failed', 'error');
+                }
+            } catch (error) {
+                console.error('Update error:', error);
+                showToast('Connection error. Please try again.', 'error');
+            }
+            
+            this.disabled = false;
+            this.textContent = 'Save Changes';
+        });
+
+        document.getElementById('cancelEditBtn').addEventListener('click', () => showMainScreen());
+
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 3959; // Earth radius in miles
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                     Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // ==========================================
+        // PAGE LOAD
+        // ==========================================
+        window.addEventListener('load', function() {
+            if (restoreSession() && currentUser.userId) {
+                enterApp();
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden');
+            }
+        });
+
+    </script>
+</body>
+</html>
