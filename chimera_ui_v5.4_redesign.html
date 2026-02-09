@@ -1446,13 +1446,33 @@
             document.getElementById('acceptSafetyLegal').disabled = !this.checked;
         });
 
-        document.getElementById('acceptSafetyLegal').addEventListener('click', () => {
-            currentUser.safetyLegalAccepted = true;
-            currentUser.lastSafetyLegalCheck = new Date().toISOString();
-            saveSession();
-            document.getElementById('safetyLegalModal').classList.remove('show');
-            showToast('Safety guidelines acknowledged', 'success');
+        document.getElementById('acceptSafetyLegal').addEventListener('click', async () => {
+    currentUser.safetyLegalAccepted = true;
+    currentUser.lastSafetyLegalCheck = new Date().toISOString();
+    saveSession();
+    
+    // Persist to backend
+    try {
+        const response = await fetch(CONFIG.appsScriptUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                action: 'updateProfile',
+                userId: currentUser.userId,
+                safetyLegalAccepted: true
+            })
         });
+        const result = await response.json();
+        if (result.status !== 'success') {
+            console.error('Failed to save safety acceptance:', result.message);
+        }
+    } catch (error) {
+        console.error('Error saving safety acceptance:', error);
+    }
+    
+    document.getElementById('safetyLegalModal').classList.remove('show');
+    showToast('Safety guidelines acknowledged', 'success');
+});
 
         // ==========================================
         // ACTIVITY FEED
@@ -1693,7 +1713,7 @@
 
             try {
                 const profileData = {
-                    action: 'createProfile',
+                    action: 'createprofile',
                     handle: createHandle.value.trim(),
                     pin: createPIN.value.trim().toLowerCase(),
                     organization: org,
