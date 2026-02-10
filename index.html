@@ -1829,12 +1829,28 @@
                     html += '<div style="text-align: center; color: #9ca3af; padding: 40px;">No recent activity</div>';
                 } else {
                     data.recentActivity.forEach(activity => {
-                        if (activity.type !== 'collection') return;
-
                         const time = new Date(activity.timestamp);
                         const timeStr = isLoggedIn ? formatTimeShort(time) : formatTimeVague(time);
                         const name = isLoggedIn ? activity.volunteer : 'Volunteer';
                         const district = activity.district ? `<span class="district-badge">[D${activity.district}]</span>` : '';
+
+                        // COORDINATOR POSTS
+                        if (activity.type === 'coordinator_post') {
+                            html += `<div class="activity-item" style="border-left: 3px solid #f59e0b; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);">
+                                <div class="activity-header">
+                                    <span class="activity-icon">📢</span>
+                                    <span class="activity-text" style="color: #92400e; font-weight: 500;">${activity.generatedText || 'Event update'}</span>
+                                </div>
+                                <div style="font-size: 11px; color: #b45309; margin-top: 4px;">${timeStr}</div>
+                            </div>`;
+                            return;
+                        }
+
+                        // Skip scouts - they only appear when validated via collections
+                        if (activity.type === 'scout') return;
+
+                        // COLLECTIONS (original code)
+                        if (activity.type !== 'collection') return;
 
                         html += `<div class="activity-item">
                             <div class="activity-header">
