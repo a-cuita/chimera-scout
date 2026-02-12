@@ -235,20 +235,34 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 0;
+            padding: 8px 0;
         }
         .who-bar-user-badge {
             font-size: 12px;
+            flex-shrink: 0;
         }
         .who-bar-user-handle {
             font-size: 13px;
             font-weight: 500;
             color: var(--text);
             flex: 1;
+            cursor: pointer;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        .who-bar-user-time {
+        .who-bar-user-handle:active {
+            color: var(--calibration-text);
+        }
+        .who-bar-user-meta {
             font-size: 11px;
             color: var(--text-faint);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .who-bar-user-idle {
+            color: var(--warning, #e8b634);
         }
 
         .exit-realm-btn {
@@ -1345,7 +1359,7 @@
         // ==========================================
         // CONFIG
         // ==========================================
-        const HUNT_VERSION = 'V0.6.3-260212';
+        const HUNT_VERSION = 'V0.6.4-260212';
         console.log('🎮 CHIMERA Hunt Version:', HUNT_VERSION);
 
         const CONFIG = {
@@ -1586,7 +1600,10 @@
                 handle: u.handle,
                 tier: u.tier,
                 enteredAt: u.enteredAt,
-                lastHeartbeat: u.lastHeartbeat
+                lastHeartbeat: u.lastHeartbeat,
+                idleMinutes: u.idleMinutes || 0,
+                level: u.level || { level: 1 },
+                characterTitle: u.characterTitle || ''
             }));
 
             // Show new XP awards
@@ -1830,12 +1847,17 @@
             whoList.forEach(user => {
                 const el = document.createElement('div');
                 el.className = 'who-bar-user';
-                const ago = getTimeAgo(user.enteredAt);
                 const isMe = user.userId === gameState.userId;
+                const lvl = user.level ? user.level.level : '?';
+                const displayName = user.characterTitle || user.handle;
+                const idleStr = user.idleMinutes >= 5 ? ` <span class="who-bar-user-idle">(idle: ${user.idleMinutes}m)</span>` : '';
+
                 el.innerHTML = `
                     <span class="who-bar-user-badge">${tierIcons[user.tier] || '🔍'}</span>
-                    <span class="who-bar-user-handle" data-userid="${user.userId}" style="cursor:pointer;">${user.handle}${isMe ? ' (you)' : ''}</span>
-                    <span class="who-bar-user-time">${ago}</span>
+                    <span class="who-bar-user-handle" data-userid="${user.userId}">
+                        ${displayName}${isMe ? ' <span style="opacity:0.5">(you)</span>' : ''}
+                    </span>
+                    <span class="who-bar-user-meta">Lvl ${lvl}${idleStr}</span>
                 `;
                 // Tap to open profile
                 el.querySelector('.who-bar-user-handle').addEventListener('click', (e) => {
@@ -2387,9 +2409,9 @@
             // Demo who-list (live presence)
             const now = new Date();
             whoList = [
-                { userId: 'demo_jeff', handle: 'MightyJeff', tier: 'scout', enteredAt: new Date(now - 42 * 60000).toISOString(), lastHeartbeat: new Date(now - 42 * 60000).toISOString() },
-                { userId: 'demo_pirates', handle: 'Pirates17', tier: 'scout', enteredAt: new Date(now - 3 * 60000).toISOString(), lastHeartbeat: new Date(now - 3 * 60000).toISOString() },
-                { userId: 'demo_jejones', handle: 'jejones', tier: 'scout', enteredAt: new Date(now - 18 * 60000).toISOString(), lastHeartbeat: new Date(now - 18 * 60000).toISOString() }
+                { userId: 'demo_jeff', handle: 'MightyJeff', tier: 'scout', enteredAt: new Date(now - 42 * 60000).toISOString(), lastHeartbeat: new Date(now - 42 * 60000).toISOString(), idleMinutes: 42, level: { level: 3 }, characterTitle: '' },
+                { userId: 'demo_pirates', handle: 'Pirates17', tier: 'scout', enteredAt: new Date(now - 3 * 60000).toISOString(), lastHeartbeat: new Date(now - 3 * 60000).toISOString(), idleMinutes: 3, level: { level: 7 }, characterTitle: 'Pirates the Relentless' },
+                { userId: 'demo_jejones', handle: 'jejones', tier: 'hunter', enteredAt: new Date(now - 18 * 60000).toISOString(), lastHeartbeat: new Date(now - 18 * 60000).toISOString(), idleMinutes: 18, level: { level: 12 }, characterTitle: '' }
             ];
 
             // Demo Hall feed (global events — no personal XP)
