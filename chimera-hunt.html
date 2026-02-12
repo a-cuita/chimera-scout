@@ -226,7 +226,17 @@
 
         .who-bar-list {
             display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 100%;
+            background: var(--bg-deep);
+            border-bottom: 1px solid var(--border);
             padding: 0 16px 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            z-index: 98;
+            max-height: 60vh;
+            overflow-y: auto;
         }
         .who-bar.expanded .who-bar-list {
             display: block;
@@ -1329,10 +1339,6 @@
             <!-- View mode -->
             <div id="profileViewMode">
                 <div class="profile-bio-section">
-                    <div class="profile-bio-label">Title</div>
-                    <div class="profile-bio-text" id="profileTitleView"></div>
-                </div>
-                <div class="profile-bio-section">
                     <div class="profile-bio-label">Bio</div>
                     <div class="profile-bio-text" id="profileBioView"></div>
                 </div>
@@ -1340,8 +1346,13 @@
             <!-- Edit mode (own profile only) -->
             <div id="profileEditMode" style="display: none;">
                 <div class="profile-bio-section">
-                    <div class="profile-bio-label">Title</div>
-                    <input type="text" class="profile-edit-field" id="profileTitleInput" placeholder="e.g. Iarwain the First of His Name" maxlength="60">
+                    <div class="profile-bio-label">Name</div>
+                    <div style="font-size: 13px; color: var(--text-faint); padding: 8px 10px; background: var(--bg-deep); border-radius: 6px; border: 1px solid var(--border); opacity: 0.6;" id="profileHandleLocked">—</div>
+                    <div class="profile-edit-hint" style="text-align: left;">Locked — set in CHIMERA</div>
+                </div>
+                <div class="profile-bio-section">
+                    <div class="profile-bio-label">Epithet</div>
+                    <input type="text" class="profile-edit-field" id="profileTitleInput" placeholder="e.g. the Eldest, the Relentless" maxlength="60">
                     <div class="profile-edit-hint"><span id="profileTitleCount">0</span>/60</div>
                 </div>
                 <div class="profile-bio-section">
@@ -1359,7 +1370,7 @@
         // ==========================================
         // CONFIG
         // ==========================================
-        const HUNT_VERSION = 'V0.6.4-260212';
+        const HUNT_VERSION = 'V0.7-260212';
         console.log('🎮 CHIMERA Hunt Version:', HUNT_VERSION);
 
         const CONFIG = {
@@ -1828,6 +1839,14 @@
             document.getElementById('whoBar').classList.toggle('expanded');
         });
 
+        // Close who-list overlay on tap outside
+        document.addEventListener('click', (e) => {
+            const whoBar = document.getElementById('whoBar');
+            if (whoBar.classList.contains('expanded') && !whoBar.contains(e.target)) {
+                whoBar.classList.remove('expanded');
+            }
+        });
+
         function renderWhoList() {
             const count = whoList.length;
             document.getElementById('whoBarCount').textContent = 
@@ -1849,7 +1868,7 @@
                 el.className = 'who-bar-user';
                 const isMe = user.userId === gameState.userId;
                 const lvl = user.level ? user.level.level : '?';
-                const displayName = user.characterTitle || user.handle;
+                const displayName = user.characterTitle ? `${user.handle} ${user.characterTitle}` : user.handle;
                 const idleStr = user.idleMinutes >= 5 ? ` <span class="who-bar-user-idle">(idle: ${user.idleMinutes}m)</span>` : '';
 
                 el.innerHTML = `
@@ -1939,11 +1958,13 @@
 
                 const p = result.profile;
                 const tier = p.tier || 'scout';
+                const handle = p.handle || userId;
+                const epithet = p.characterTitle || '';
 
-                // Header
+                // Header — always show handle, epithet below if set
                 document.getElementById('profileTierIcon').textContent = tierIcons[tier] || '🔍';
-                document.getElementById('profileHandle').textContent = p.handle || userId;
-                document.getElementById('profileTitleDisplay').textContent = p.characterTitle || '';
+                document.getElementById('profileHandle').textContent = handle;
+                document.getElementById('profileTitleDisplay').textContent = epithet ? `${handle} ${epithet}` : '';
 
                 // Stats
                 document.getElementById('profileTier').textContent = tierNames[tier] || 'Scout';
@@ -1960,7 +1981,8 @@
                     // Edit mode
                     document.getElementById('profileViewMode').style.display = 'none';
                     document.getElementById('profileEditMode').style.display = 'block';
-                    profileTitleInput.value = p.characterTitle || '';
+                    document.getElementById('profileHandleLocked').textContent = handle;
+                    profileTitleInput.value = epithet;
                     profileBioInput.value = p.characterBio || '';
                     document.getElementById('profileTitleCount').textContent = profileTitleInput.value.length;
                     document.getElementById('profileBioCount').textContent = profileBioInput.value.length;
@@ -1968,11 +1990,7 @@
                     // View mode
                     document.getElementById('profileEditMode').style.display = 'none';
                     document.getElementById('profileViewMode').style.display = 'block';
-                    const titleView = document.getElementById('profileTitleView');
                     const bioView = document.getElementById('profileBioView');
-                    titleView.textContent = p.characterTitle || '';
-                    titleView.className = p.characterTitle ? 'profile-bio-text' : 'profile-bio-empty';
-                    if (!p.characterTitle) titleView.textContent = 'No title set';
                     bioView.textContent = p.characterBio || '';
                     bioView.className = p.characterBio ? 'profile-bio-text' : 'profile-bio-empty';
                     if (!p.characterBio) bioView.textContent = 'No bio written yet';
@@ -1994,13 +2012,19 @@
                     characterBio: profileBioInput.value.trim()
                 });
                 if (result.status === 'success') {
+                    const newTitle = profileTitleInput.value.trim();
                     // Update local gameState
                     gameState.profile = {
-                        characterTitle: profileTitleInput.value.trim(),
+                        characterTitle: newTitle,
                         characterBio: profileBioInput.value.trim()
                     };
                     // Update display title in modal
-                    document.getElementById('profileTitleDisplay').textContent = profileTitleInput.value.trim();
+                    const handle = gameState.handle || gameState.userId;
+                    document.getElementById('profileTitleDisplay').textContent = newTitle ? `${handle} ${newTitle}` : '';
+                    // Update who list to reflect new title
+                    const me = whoList.find(u => u.userId === gameState.userId);
+                    if (me) me.characterTitle = newTitle;
+                    renderWhoList();
                     showToast('Profile saved!');
                     closeProfile();
                 } else {
