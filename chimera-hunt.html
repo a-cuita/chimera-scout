@@ -420,6 +420,8 @@
         .game-activity-icon.tier { background: rgba(167,139,250,0.15); }
         .game-activity-icon.realm { background: rgba(78,201,160,0.1); }
         .game-activity-icon.realm-exit { background: rgba(224,82,82,0.1); }
+        .game-activity-icon.realm-idle { background: rgba(232,182,52,0.1); }
+        .game-activity-icon.realm-return { background: rgba(78,201,160,0.15); }
         .game-activity-icon.event { background: rgba(232,182,52,0.15); }
         .game-activity-icon.material { background: rgba(167,139,250,0.1); }
         .game-activity-icon.announcement { background: var(--bg-elevated); }
@@ -1211,32 +1213,50 @@
                         </div>
                         <button class="triangle-btn" id="startTriangleBtn">Map My Territory</button>
                     </div>
+                </div>
 
-                    <!-- Map view (hidden until button tap) -->
-                    <div class="territory-map-container" id="territoryMapContainer">
-                        <div id="territoryMap"></div>
+                <!-- Shared map selection view (used by scout intro + hunter map-new) -->
+                <div class="territory-map-container" id="territoryMapContainer">
+                    <div id="territoryMap"></div>
 
-                        <div class="map-legend">
-                            <div class="map-legend-item"><div class="map-legend-dot" style="background: #4eca8b;"></div> Available</div>
-                            <div class="map-legend-item"><div class="map-legend-dot" style="background: #e8b634;"></div> Selected</div>
-                        </div>
-
-                        <div class="map-selection-bar">
-                            <div>
-                                <div class="map-selection-count"><strong id="mapSelCount">0</strong> / 3 selected</div>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="map-back-btn" id="mapBackBtn">← Back</button>
-                                <button class="map-validate-btn" id="mapValidateBtn">Validate Triangle</button>
-                            </div>
-                        </div>
-
-                        <div class="map-result" id="mapResult" style="display: none;"></div>
+                    <div class="map-legend">
+                        <div class="map-legend-item"><div class="map-legend-dot" style="background: #4eca8b;"></div> Available</div>
+                        <div class="map-legend-item"><div class="map-legend-dot" style="background: #e8b634;"></div> Selected</div>
                     </div>
+
+                    <div class="map-selection-bar">
+                        <div>
+                            <div class="map-selection-count"><strong id="mapSelCount">0</strong> / 3 selected</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="map-back-btn" id="mapBackBtn">← Back</button>
+                            <button class="map-validate-btn" id="mapValidateBtn">Validate Triangle</button>
+                        </div>
+                    </div>
+
+                    <div class="map-result" id="mapResult" style="display: none;"></div>
                 </div>
 
                 <!-- Hunter: Quest Guidance -->
                 <div id="trackerHunterSection" class="hidden">
+                    <!-- Territory Map (read-only, multi-triangle) -->
+                    <div class="game-card" id="trackerTerritoryCard" style="padding: 0; overflow: hidden; margin-bottom: 12px;">
+                        <div style="padding: 12px 16px 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div class="game-card-header" style="color: var(--tier-hunter); margin-bottom: 0;">🗺️ Your Territories</div>
+                            <span id="trackerTriangleCount" style="font-size: 11px; color: var(--text-faint);"></span>
+                        </div>
+                        <div id="trackerTerritoryMap" style="height: 220px; width: 100%;"></div>
+                        <div id="trackerTriangleList" style="padding: 6px 16px 4px;"></div>
+                        <div style="padding: 4px 16px 10px; font-size: 10px; color: var(--text-faint); line-height: 1.5; opacity: 0.7;">
+                            Triangulations expire after 24h but can be reactivated by re-scouting. Expiries past 48h are wiped from memory.
+                        </div>
+                    </div>
+
+                    <!-- Map New Territory button (hunter+) -->
+                    <div id="trackerMapNewBtn" class="game-card" style="text-align: center; padding: 12px;">
+                        <button class="triangle-btn" id="mapNewTerritoryBtn">Map New Territory</button>
+                    </div>
+
                     <div class="game-card" style="border-left: 3px solid var(--tier-hunter);">
                         <div class="game-card-header" style="color: var(--tier-hunter);">🗡️ Hunter's Path</div>
                         <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
@@ -1370,7 +1390,7 @@
         // ==========================================
         // CONFIG
         // ==========================================
-        const HUNT_VERSION = 'V0.7-260212';
+        const HUNT_VERSION = 'V0.7.2-260212';
         console.log('🎮 CHIMERA Hunt Version:', HUNT_VERSION);
 
         const CONFIG = {
@@ -1595,6 +1615,7 @@
                 multiplier: gs.calibration.multiplier
             };
             gameState.triangleComplete = gs.triangleComplete;
+            gameState.triangles = gs.triangles || { triangles: [], activeCount: 0 };
             gameState.profile = gs.profile || { characterTitle: '', characterBio: '' };
 
             // Apply live Hall feed
@@ -1666,6 +1687,10 @@
                 'realm_enter': '🌿',
                 'realm-exit': '🚪',
                 'realm_exit': '🚪',
+                'realm-idle': '💤',
+                'realm_idle_exit': '💤',
+                'realm-return': '🌅',
+                'realm_return': '🌅',
                 'streak': '🔥',
                 'streak_milestone': '🔥',
                 'validated': '✓',
@@ -2164,7 +2189,8 @@
 
             // Section visibility by tier
             document.getElementById('trackerScoutSection').classList.toggle('hidden', gameState.tier !== 'scout');
-            document.getElementById('trackerHunterSection').classList.toggle('hidden', gameState.tier !== 'hunter');
+            // Show hunter section for hunter+ (anyone who's completed triangle)
+            document.getElementById('trackerHunterSection').classList.toggle('hidden', gameState.tier === 'scout');
             document.getElementById('trackerTamerSection').classList.toggle('hidden', 
                 gameState.tier === 'scout' || gameState.tier === 'hunter');
 
@@ -2177,6 +2203,123 @@
             document.getElementById('calDivergence').textContent = cal.divergence !== null ? cal.divergence.toFixed(1) : '—';
             document.getElementById('calBias').textContent = cal.bias !== null ? (cal.bias > 0 ? 'Over +' : 'Under ') + cal.bias.toFixed(1) : '—';
             document.getElementById('calMultiplier').textContent = cal.multiplier.toFixed(2) + '×';
+
+            // Render territory map if triangle data exists
+            renderTerritoryMap();
+        }
+
+        let trackerTerritoryMap = null;
+
+        function renderTerritoryMap() {
+            const triData = gameState.triangles || { triangles: [], activeCount: 0 };
+            const tris = triData.triangles.filter(t => t.points);
+            const container = document.getElementById('trackerTerritoryMap');
+            const listEl = document.getElementById('trackerTriangleList');
+            const countEl = document.getElementById('trackerTriangleCount');
+            const card = document.getElementById('trackerTerritoryCard');
+            const newBtnCard = document.getElementById('trackerMapNewBtn');
+
+            // Show/hide map new territory button
+            if (newBtnCard) {
+                const atLimit = triData.activeCount >= 3;
+                newBtnCard.style.display = 'block';
+                const btn = document.getElementById('mapNewTerritoryBtn');
+                if (atLimit) {
+                    btn.textContent = 'Max Territories (3/3)';
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                } else {
+                    btn.textContent = 'Map New Territory';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            }
+
+            if (tris.length === 0) {
+                if (card) card.style.display = 'none';
+                return;
+            }
+            if (card) card.style.display = 'block';
+
+            // Count display
+            if (countEl) countEl.textContent = triData.activeCount + '/3 active';
+
+            // Triangle list with status
+            if (listEl) {
+                listEl.innerHTML = tris.map((t, i) => {
+                    const isActive = t.status === 'active';
+                    const color = isActive ? '#e8b634' : '#6b7280';
+                    const label = isActive ? 'Active' : 'Expired';
+                    const sidesStr = t.sides.map(s => s.toFixed(2) + ' mi').join(' · ');
+                    const timeLeft = isActive ? getTimeLeft(t.expiresAt) : '';
+                    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:11px;border-top:1px solid var(--border);">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span>
+                            <span style="color:var(--text-faint);">${sidesStr}</span>
+                        </div>
+                        <span style="color:${color};font-size:10px;">${label}${timeLeft ? ' · ' + timeLeft : ''}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            // Init or reset map
+            if (trackerTerritoryMap) {
+                trackerTerritoryMap.remove();
+                trackerTerritoryMap = null;
+            }
+
+            setTimeout(() => {
+                trackerTerritoryMap = L.map(container, {
+                    zoomControl: false,
+                    attributionControl: false,
+                    dragging: false,
+                    scrollWheelZoom: false,
+                    doubleClickZoom: false,
+                    touchZoom: false
+                });
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18
+                }).addTo(trackerTerritoryMap);
+
+                const allBounds = [];
+
+                for (const tri of tris) {
+                    const pts = tri.points.map(p => [p.lat, p.lon]);
+                    const isActive = tri.status === 'active';
+
+                    const polygon = L.polygon(pts, {
+                        color: isActive ? '#e8b634' : '#6b7280',
+                        weight: isActive ? 2 : 1,
+                        fillColor: isActive ? '#e8b634' : '#6b7280',
+                        fillOpacity: isActive ? 0.12 : 0.05,
+                        dashArray: isActive ? null : '4 4'
+                    }).addTo(trackerTerritoryMap);
+
+                    pts.forEach(pt => {
+                        L.circleMarker(pt, {
+                            radius: isActive ? 6 : 4,
+                            fillColor: isActive ? '#e8b634' : '#6b7280',
+                            color: '#fff',
+                            weight: isActive ? 2 : 1,
+                            fillOpacity: isActive ? 1 : 0.5
+                        }).addTo(trackerTerritoryMap);
+                        allBounds.push(pt);
+                    });
+                }
+
+                if (allBounds.length > 0) {
+                    trackerTerritoryMap.fitBounds(L.latLngBounds(allBounds).pad(0.2));
+                }
+            }, 100);
+        }
+
+        function getTimeLeft(isoDate) {
+            const diff = new Date(isoDate) - new Date();
+            if (diff <= 0) return '';
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            return h > 0 ? h + 'h ' + m + 'm' : m + 'm';
         }
 
         // ==========================================
@@ -2200,9 +2343,10 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
 
-        document.getElementById('startTriangleBtn').addEventListener('click', async () => {
+        let mapOpenerContext = 'scout'; // 'scout' or 'hunter'
+
+        async function openTerritorySelectionMap() {
             console.log('📐 Opening territory map...');
-            document.getElementById('triangleIntro').style.display = 'none';
             document.getElementById('territoryMapContainer').classList.add('active');
             document.getElementById('mapResult').style.display = 'none';
 
@@ -2283,6 +2427,17 @@
 
             // Invalidate size after show (Leaflet needs this)
             setTimeout(() => territoryMap.invalidateSize(), 100);
+        }
+
+        document.getElementById('startTriangleBtn').addEventListener('click', () => {
+            mapOpenerContext = 'scout';
+            document.getElementById('triangleIntro').style.display = 'none';
+            openTerritorySelectionMap();
+        });
+
+        document.getElementById('mapNewTerritoryBtn').addEventListener('click', () => {
+            mapOpenerContext = 'hunter';
+            openTerritorySelectionMap();
         });
 
         function toggleScoutSelection(marker) {
@@ -2362,8 +2517,10 @@
         // Back button
         document.getElementById('mapBackBtn').addEventListener('click', () => {
             document.getElementById('territoryMapContainer').classList.remove('active');
-            document.getElementById('triangleIntro').style.display = 'block';
             document.getElementById('mapResult').style.display = 'none';
+            if (mapOpenerContext === 'scout') {
+                document.getElementById('triangleIntro').style.display = 'block';
+            }
         });
 
         // Validate button
@@ -2390,21 +2547,31 @@
                 resultDiv.style.display = 'block';
 
                 if (result.valid) {
-                    resultDiv.className = 'map-result success';
-                    resultDiv.innerHTML = `<strong>⚔️ Territory Proven!</strong><br>
-                        Sides: ${result.sides.map(s => s + ' mi').join(' • ')}<br>
-                        You've unlocked <strong>Hunter</strong> class!`;
-
-                    // Update local state
-                    gameState.tier = 'hunter';
-                    renderHall();
-                    renderTracker();
-                    renderGameState();
-
-                    // Re-enter the hunt to get fresh state
-                    if (CONFIG.huntScriptUrl) {
-                        setTimeout(() => fireEnterTheHunt(), 1500);
+                    if (result.tierUnlocked) {
+                        resultDiv.className = 'map-result success';
+                        resultDiv.innerHTML = `<strong>⚔️ Territory Proven!</strong><br>
+                            Sides: ${result.sides.map(s => s + ' mi').join(' • ')}<br>
+                            You've unlocked <strong>Hunter</strong> class!`;
+                        gameState.tier = 'hunter';
+                    } else {
+                        resultDiv.className = 'map-result success';
+                        resultDiv.innerHTML = `<strong>🗺️ Territory Mapped!</strong><br>
+                            Sides: ${result.sides.map(s => s + ' mi').join(' • ')}<br>
+                            ${result.activeCount}/3 active territories`;
                     }
+
+                    // Close map selection after brief delay, refresh state
+                    setTimeout(() => {
+                        document.getElementById('territoryMapContainer').classList.remove('active');
+                        document.getElementById('mapResult').style.display = 'none';
+                        if (mapOpenerContext === 'scout') {
+                            document.getElementById('triangleIntro').style.display = 'block';
+                        }
+                        // Re-enter to get fresh state with new triangle data
+                        if (CONFIG.huntScriptUrl) {
+                            fireEnterTheHunt();
+                        }
+                    }, 1500);
                 } else {
                     resultDiv.className = 'map-result fail';
                     resultDiv.innerHTML = `<strong>Triangle invalid</strong><br>${(result.failReasons || []).join('<br>')}`;
@@ -2425,10 +2592,48 @@
         // ==========================================
         function loadDemoData() {
             gameState.totalXP = 342;
-            gameState.tier = 'scout';
+            gameState.tier = 'hunter';
+            gameState.triangleComplete = true;
             gameState.scoutStreak = { count: 7, status: 'active' };
             gameState.hunterStreak = { count: 0, status: 'locked' };
             gameState.calibration = { divergence: 1.8, bias: -0.4, multiplier: 1.10 };
+
+            // Demo triangles
+            const now24ago = new Date(Date.now() - 20 * 3600000).toISOString();
+            const now30ago = new Date(Date.now() - 30 * 3600000).toISOString();
+            gameState.triangles = {
+                activeCount: 1,
+                triangles: [
+                    {
+                        triangleId: 'tri_demo1',
+                        status: 'active',
+                        points: [
+                            { lat: 32.3792, lon: -86.3077 },
+                            { lat: 32.3730, lon: -86.2990 },
+                            { lat: 32.3685, lon: -86.3060 }
+                        ],
+                        sides: [0.68, 0.55, 0.73],
+                        createdAt: now24ago,
+                        lastActiveAt: now24ago,
+                        expiresAt: new Date(Date.now() + 4 * 3600000).toISOString(),
+                        wipesAt: new Date(Date.now() + 28 * 3600000).toISOString()
+                    },
+                    {
+                        triangleId: 'tri_demo2',
+                        status: 'expired',
+                        points: [
+                            { lat: 32.3850, lon: -86.3150 },
+                            { lat: 32.3810, lon: -86.3070 },
+                            { lat: 32.3770, lon: -86.3180 }
+                        ],
+                        sides: [0.61, 0.72, 0.58],
+                        createdAt: now30ago,
+                        lastActiveAt: now30ago,
+                        expiresAt: new Date(Date.now() - 6 * 3600000).toISOString(),
+                        wipesAt: new Date(Date.now() + 18 * 3600000).toISOString()
+                    }
+                ]
+            };
 
             // Demo who-list (live presence)
             const now = new Date();
