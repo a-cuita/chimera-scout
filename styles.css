@@ -157,16 +157,7 @@ body {
     padding: 16px;
     padding-bottom: 80px;
 }
-/* Admin + Event screen containment */
-#adminScreen,
-#eventManagerScreen,
-#proposeEventScreen,
-#eventDetailScreen,
-#upcomingEventsScreen {
-    padding: 16px;
-    padding-bottom: 80px;
-    max-width: 480px;
-}
+
 /* ==================== TOAST NOTIFICATIONS ==================== */
 .toast-container {
     position: fixed;
@@ -1062,15 +1053,6 @@ body {
     color: #e5e7eb;
     line-height: 1.6;
 }
-/* ==========================================
-   SNIPPET 2: CSS ADDITIONS
-   Feedback System + Admin Tab
-   ==========================================
-   
-   INSTRUCTIONS:
-   Paste this block inside your <style> tag,
-   right before the closing </style> tag.
-   ========================================== */
 
 /* ==================== FEEDBACK MODAL ==================== */
 .feedback-overlay {
