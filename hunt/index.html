@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>CHIMERA Hunt</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <!-- ==================== TOAST ==================== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="container">
+        <!-- ==================== HEADER ==================== -->
+        <div class="header">
+            <a class="header-back" id="backToChimera">
+                <span class="header-back-arrow">‹</span>
+                <span>CHIMERA</span>
+            </a>
+            <div class="header-center">
+                <div class="header-title">CHIMERA Hunt</div>
+            </div>
+            <div class="header-xp">
+                <div class="header-xp-value" id="headerXP">0</div>
+                <div class="header-xp-label">Total XP</div>
+            </div>
+        </div>
+
+        <!-- ==================== WHO-LIST BAR ==================== -->
+        <div class="who-bar" id="whoBar">
+            <div class="who-bar-collapsed" id="whoBarToggle">
+                <div class="who-bar-count">
+                    <div class="who-bar-dot"></div>
+                    <span id="whoBarCount">0 in the realm</span>
+                </div>
+                <span class="who-bar-chevron">▼</span>
+            </div>
+            <div class="who-bar-list" id="whoBarList">
+                <!-- Populated by JS -->
+                <button class="exit-realm-btn" id="exitRealmBtn">Exit Realm</button>
+            </div>
+        </div>
+
+        <!-- ==================== SCREEN: HALL ==================== -->
+        <div class="content">
+            <div class="screen active" id="screenHall">
+                <!-- Tier & XP Summary -->
+                <div class="game-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <span class="tier-badge scout" id="hallTierBadge">
+                            <span class="tier-badge-icon">🔍</span>
+                            <span>Scout</span>
+                        </span>
+                        <span style="font-size: 12px; color: var(--text-muted);" id="hallNextTier">Next: Hunter</span>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span id="hallProgressText">0 / 250 XP</span>
+                            <span id="hallProgressPct">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill xp" id="hallProgressFill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Streaks -->
+                <div class="game-card">
+                    <div class="game-card-header">Active Streaks</div>
+                    <div class="streak-row">
+                        <span class="streak-label">Scout (Daily)</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="streak-value streak-fire" id="hallScoutStreak">🔥 0</span>
+                            <span class="streak-status active" id="hallScoutStatus">Active</span>
+                        </div>
+                    </div>
+                    <div class="streak-row">
+                        <span class="streak-label">Hunter (Weekly)</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="streak-value streak-dead" id="hallHunterStreak">— 0</span>
+                            <span class="streak-status broken" id="hallHunterStatus">Locked</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <div class="quick-action" id="actionScout">
+                        <div class="quick-action-icon">🔍</div>
+                        <div class="quick-action-label">Rate Location</div>
+                    </div>
+                    <div class="quick-action" id="actionCollect">
+                        <div class="quick-action-icon">🗑️</div>
+                        <div class="quick-action-label">Go Collect</div>
+                    </div>
+                </div>
+
+                <!-- Onboarding container (hidden by default, used by enrollment flow) -->
+                <div id="hallActivityList" style="display: none;"></div>
+            </div>
+
+            <!-- ==================== SCREEN: LEDGER ==================== -->
+            <div class="screen" id="screenLedger">
+                <!-- Total -->
+                <div class="ledger-total">
+                    <div class="ledger-total-value" id="ledgerTotal">0 XP</div>
+                    <div class="ledger-total-label">Total Earned</div>
+                </div>
+
+                <!-- Time Filters -->
+                <div class="ledger-filter">
+                    <button class="ledger-filter-btn active" data-filter="today">Today</button>
+                    <button class="ledger-filter-btn" data-filter="week">This Week</button>
+                    <button class="ledger-filter-btn" data-filter="all">All Time</button>
+                </div>
+
+                <!-- XP Entries -->
+                <div class="game-card" style="padding: 0;">
+                    <div id="ledgerEntries">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📒</div>
+                            <div class="empty-state-text">No XP entries yet.<br>Start building your record!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== SCREEN: RANKS ==================== -->
+            <div class="screen" id="screenRanks">
+                <!-- Time Toggle -->
+                <div class="rank-filters">
+                    <button class="ledger-filter-btn active" data-rank="alltime">All-Time</button>
+                    <button class="ledger-filter-btn" data-rank="weekly">Weekly</button>
+                    <button class="ledger-filter-btn" data-rank="monthly">Monthly</button>
+                </div>
+
+                <!-- Scope Toggle -->
+                <div class="rank-filters" style="margin-bottom: 16px;">
+                    <button class="ledger-filter-btn active" data-scope="everyone">Everyone</button>
+                    <button class="ledger-filter-btn" data-scope="org">My Org</button>
+                    <button class="ledger-filter-btn" data-scope="zone">My Zone</button>
+                </div>
+
+                <!-- Leaderboard -->
+                <div class="game-card" style="padding: 0;">
+                    <div id="ranksList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🏆</div>
+                            <div class="empty-state-text">Leaderboard loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== SCREEN: TRACKER ==================== -->
+            <div class="screen" id="screenTracker">
+                <!-- Tier Roadmap -->
+                <div class="game-card">
+                    <div class="game-card-header">Progression</div>
+                    <div class="tier-roadmap">
+                        <div class="tier-roadmap-progress" id="roadmapProgress" style="width: 0%;"></div>
+                        <div class="tier-node current" id="nodeScout">
+                            <div class="tier-node-circle">🔍</div>
+                            <div class="tier-node-label">Scout</div>
+                        </div>
+                        <div class="tier-node" id="nodeHunter">
+                            <div class="tier-node-circle">🗡️</div>
+                            <div class="tier-node-label">Hunter</div>
+                        </div>
+                        <div class="tier-node" id="nodeTamer">
+                            <div class="tier-node-circle">🐉</div>
+                            <div class="tier-node-label">Tamer</div>
+                        </div>
+                        <div class="tier-node" id="nodeWarden">
+                            <div class="tier-node-circle">🛡️</div>
+                            <div class="tier-node-label">Warden</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scout: Triangle Status (Hunter unlock gate) -->
+                <div id="trackerScoutSection">
+                    <!-- Intro view -->
+                    <div class="triangle-status" id="triangleIntro">
+                        <div class="triangle-status-icon">📐</div>
+                        <div class="triangle-status-title">Prove Your Territory</div>
+                        <div class="triangle-status-desc">
+                            Select 3 scouted locations that form a triangle (0.5–1.0 mi sides) to unlock Hunter class.
+                        </div>
+                        <button class="triangle-btn" id="startTriangleBtn">Map My Territory</button>
+                    </div>
+                </div>
+
+                <!-- Shared map selection view (used by scout intro + hunter map-new) -->
+                <div class="territory-map-container" id="territoryMapContainer">
+                    <div id="territoryMap"></div>
+
+                    <div class="map-legend">
+                        <div class="map-legend-item"><div class="map-legend-dot" style="background: #4eca8b;"></div> Available</div>
+                        <div class="map-legend-item"><div class="map-legend-dot" style="background: #e8b634;"></div> Selected</div>
+                    </div>
+
+                    <div class="map-selection-bar">
+                        <div>
+                            <div class="map-selection-count"><strong id="mapSelCount">0</strong> / 3 selected</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="map-back-btn" id="mapBackBtn">← Back</button>
+                            <button class="map-validate-btn" id="mapValidateBtn">Validate Triangle</button>
+                        </div>
+                    </div>
+
+                    <div class="map-result" id="mapResult" style="display: none;"></div>
+                </div>
+
+                <!-- Hunter: Quest Guidance -->
+                <div id="trackerHunterSection" class="hidden">
+                    <!-- Territory Map (read-only, multi-triangle) -->
+                    <div class="game-card" id="trackerTerritoryCard" style="padding: 0; overflow: hidden; margin-bottom: 12px;">
+                        <div style="padding: 12px 16px 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div class="game-card-header" style="color: var(--tier-hunter); margin-bottom: 0;">🗺️ Your Territories</div>
+                            <span id="trackerTriangleCount" style="font-size: 11px; color: var(--text-faint);"></span>
+                        </div>
+                        <div id="trackerTerritoryMap" style="height: 220px; width: 100%;"></div>
+                        <div id="trackerTriangleList" style="padding: 6px 16px 4px;"></div>
+                        <div style="padding: 4px 16px 10px; font-size: 10px; color: var(--text-faint); line-height: 1.5; opacity: 0.7;">
+                            Triangulations expire after 24h but can be reactivated by re-scouting. Expiries past 48h are wiped from memory.
+                        </div>
+                    </div>
+
+                    <!-- Map New Territory button (hunter+) -->
+                    <div id="trackerMapNewBtn" class="game-card" style="text-align: center; padding: 12px;">
+                        <button class="triangle-btn" id="mapNewTerritoryBtn">Map New Territory</button>
+                    </div>
+
+                    <div class="game-card" style="border-left: 3px solid var(--tier-hunter);">
+                        <div class="game-card-header" style="color: var(--tier-hunter);">🗡️ Hunter's Path</div>
+                        <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                            <p style="margin-bottom: 10px;">You've proven your territory. Now it's time to collect.</p>
+                            <p style="margin-bottom: 10px;"><strong style="color: var(--text);">Your mission:</strong> Go to locations you've scouted, collect litter, and see how your ratings compare to what's actually out there. The closer your ratings match reality, the higher your calibration multiplier — and the more XP everything earns.</p>
+                            <p style="margin-bottom: 6px;"><strong style="color: var(--text);">Keep building:</strong></p>
+                            <span style="color: var(--text);">• Scout daily</span> to maintain your streak<br>
+                            <span style="color: var(--text);">• Collect weekly</span> to build your hunter streak<br>
+                            <span style="color: var(--text);">• Watch your calibration</span> stats below as data comes in
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calibration Stats (hidden until data exists) -->
+                <div class="calibration-card mt-12" id="trackerCalibrationSection">
+                    <div class="game-card-header" style="color: var(--calibration);">Calibration</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+                        Your rating accuracy shapes your XP multiplier. Collect near scouted locations to generate calibration data.
+                    </div>
+                    <div class="calibration-stat">
+                        <span class="calibration-stat-label">Avg Divergence</span>
+                        <span class="calibration-stat-value" id="calDivergence">—</span>
+                    </div>
+                    <div class="calibration-stat">
+                        <span class="calibration-stat-label">Bias Trend</span>
+                        <span class="calibration-stat-value" id="calBias">—</span>
+                    </div>
+                    <div class="calibration-stat">
+                        <span class="calibration-stat-label">Current Multiplier</span>
+                        <span class="calibration-stat-value" id="calMultiplier">1.00×</span>
+                    </div>
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Accuracy</span>
+                            <span id="calAccuracyPct">—</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill calibration" id="calProgressFill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Material Training (Tamer section, hidden until Hunter) -->
+                <div id="trackerTamerSection" class="hidden">
+                    <div class="game-card">
+                        <div class="game-card-header">Material Training</div>
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🧪</div>
+                            <div class="empty-state-text">Complete Hunter collections to<br>unlock material training quests.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== CAMPFIRE (bottom drop-up activity feed) ==================== -->
+        <div class="feed-bar" id="feedBar">
+            <div class="feed-bar-list" id="feedBarList"></div>
+            <div class="feed-bar-admin" id="feedBarAdmin">
+                <div style="display: flex; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--border); background: var(--bg-elevated);">
+                    <input type="text" id="campfireInput" placeholder="Post to the campfire..." style="flex:1; background: var(--bg-deep); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none;">
+                    <button id="campfireSendBtn" style="background: var(--xp-gold); color: var(--bg-deep); border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;">Send</button>
+                </div>
+            </div>
+            <div class="feed-bar-collapsed" id="feedBarToggle">
+                <div class="feed-bar-label">
+                    🔥 <span id="feedBarLabel">Campfire</span>
+                    <span style="font-size: 10px; font-weight: 400; color: var(--text-faint); opacity: 0.6;">(live activity log)</span>
+                    <span class="feed-bar-badge empty" id="feedBarBadge">0</span>
+                </div>
+                <span class="feed-bar-chevron">▲</span>
+            </div>
+        </div>
+
+        <!-- ==================== TAB BAR ==================== -->
+        <div class="tab-bar">
+            <div class="tab active" data-tab="screenHall">
+                <span class="tab-icon">🏠</span>
+                <span class="tab-label">Hall</span>
+            </div>
+            <div class="tab" data-tab="screenLedger">
+                <span class="tab-icon">📒</span>
+                <span class="tab-label">Ledger</span>
+            </div>
+            <div class="tab" data-tab="screenRanks">
+                <span class="tab-icon">🏆</span>
+                <span class="tab-label">Ranks</span>
+            </div>
+            <div class="tab" data-tab="screenTracker">
+                <span class="tab-icon">📈</span>
+                <span class="tab-label">Tracker</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PROFILE MODAL ==================== -->
+    <div class="profile-overlay" id="profileOverlay">
+        <div class="profile-card" id="profileCard">
+            <button class="profile-close" id="profileClose">&times;</button>
+            <div class="profile-header">
+                <div class="profile-tier-icon" id="profileTierIcon">🔍</div>
+                <div class="profile-handle" id="profileHandle">—</div>
+                <div class="profile-title-display" id="profileTitleDisplay"></div>
+            </div>
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileTier">Scout</div>
+                    <div class="profile-stat-label">Tier</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileLevel">1</div>
+                    <div class="profile-stat-label">Level</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileXP">0</div>
+                    <div class="profile-stat-label">XP</div>
+                </div>
+            </div>
+            <!-- View mode -->
+            <div id="profileViewMode">
+                <div class="profile-bio-section">
+                    <div class="profile-bio-label">Bio</div>
+                    <div class="profile-bio-text" id="profileBioView"></div>
+                </div>
+            </div>
+            <!-- Edit mode (own profile only) -->
+            <div id="profileEditMode" style="display: none;">
+                <div class="profile-bio-section">
+                    <div class="profile-bio-label">Name</div>
+                    <div style="font-size: 13px; color: var(--text-faint); padding: 8px 10px; background: var(--bg-deep); border-radius: 6px; border: 1px solid var(--border); opacity: 0.6;" id="profileHandleLocked">—</div>
+                    <div class="profile-edit-hint" style="text-align: left;">Locked — set in CHIMERA</div>
+                </div>
+                <div class="profile-bio-section">
+                    <div class="profile-bio-label">Epithet</div>
+                    <input type="text" class="profile-edit-field" id="profileTitleInput" placeholder="e.g. the Eldest, the Relentless" maxlength="60">
+                    <div class="profile-edit-hint"><span id="profileTitleCount">0</span>/60</div>
+                </div>
+                <div class="profile-bio-section">
+                    <div class="profile-bio-label">Bio</div>
+                    <textarea class="profile-edit-field" id="profileBioInput" placeholder="Write your character's story..." rows="4" maxlength="500"></textarea>
+                    <div class="profile-edit-hint"><span id="profileBioCount">0</span>/500</div>
+                </div>
+                <button class="profile-save-btn" id="profileSaveBtn">Save Profile</button>
+            </div>
+            <div class="profile-enrolled" id="profileEnrolled"></div>
+        </div>
+    </div>
+
+    <!-- ==================== LOADING OVERLAY ==================== -->
+    <div class="hunt-loading-overlay" id="huntLoadingOverlay">
+        <div class="hunt-loading-icon" id="huntLoadingIcon">🌿</div>
+        <div class="hunt-loading-text" id="huntLoadingText">Entering the realm...</div>
+    </div>
+
+    <!-- ==================== JS MODULES ==================== -->
+    <!-- Load order: config/utils → api/ui → features → orchestrator -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/hall.js"></script>
+    <script src="js/ledger.js"></script>
+    <script src="js/ranks.js"></script>
+    <script src="js/tracker.js"></script>
+    <script src="js/territory.js"></script>
+    <script src="js/wholist.js"></script>
+    <script src="js/campfire.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
