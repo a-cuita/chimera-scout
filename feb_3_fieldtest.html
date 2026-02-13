@@ -516,11 +516,22 @@
                 
                 // Add scout markers with gradient coloring
                 let scoutsRendered = 0;
+               const now = Date.now();
+                const HOUR_24 = 24 * 60 * 60 * 1000;
+                
                 data.scouts.forEach(scout => {
                     if (!scout.lat || !scout.lon) {
                         console.log('Scout missing coordinates:', scout);
                         return;
                     }
+                    
+                    // Only show scouts from last 72 hours
+                    const ageMs = now - new Date(scout.timestamp).getTime();
+                    if (ageMs > HOUR_24 * 3) return;
+                    
+                    // Fade: 0-24h = 100%, 24-48h = 75%, 48-72h = 50%
+                    const ageDays = Math.floor(ageMs / HOUR_24);
+                    const opacity = 0.5 * (1 - (ageDays * 0.25));
                     
                     scoutsRendered++;
                     const color = getGradientColor(scout.rating);
@@ -531,7 +542,7 @@
                         fillColor: color,
                         color: '#333',
                         weight: 2,
-                        fillOpacity: 0.5
+                        fillOpacity: opacity
                     }).addTo(map);
                     
                     const popupContent = `
