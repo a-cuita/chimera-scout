@@ -1782,7 +1782,7 @@
         // ==========================================
         function restoreSession() {
             const saved = sessionStorage.getItem('chimera_user');
-            if (saved) {
+            if (saved && sessionStorage.getItem('rh_token')) {
                 try { currentUser = JSON.parse(saved); return true; }
                 catch (e) { return false; }
             }
@@ -1796,6 +1796,8 @@
         function clearSession() {
             currentUser = { userId: null, handle: null, organization: null, addresses: [], safetyLegalAccepted: false, lastSafetyLegalCheck: null };
             sessionStorage.removeItem('chimera_user');
+            sessionStorage.removeItem('rh_token');
+            sessionStorage.removeItem('rh_role');
         }
 
         // ==========================================
@@ -2027,7 +2029,7 @@
             try {
                 await fetch(CONFIG.appsScriptUrl, {
                     method: 'POST', headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ action: 'updateProfile', userId: currentUser.userId, safetyLegalAccepted: true })
+                    body: JSON.stringify({ action: 'updateProfile', token: sessionStorage.getItem('rh_token'), userId: currentUser.userId, safetyLegalAccepted: true })
                 });
             } catch (e) { console.error('Safety save error:', e); }
             
@@ -2272,6 +2274,8 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
+                    sessionStorage.setItem('rh_token', result.token);
+                    sessionStorage.setItem('rh_role', result.role);
                     currentUser = {
                         userId: result.userId, handle: result.handle, organization: result.organization,
                         addresses: result.addresses || [],
@@ -2382,7 +2386,7 @@
             // For coordinators: check for status changes on their events
             if (checkCoordinatorStatus()) {
                 try {
-                    const response = await fetch(CONFIG.appsScriptUrl + '?action=get_my_events&userId=' + currentUser.userId);
+                    const response = await fetch(CONFIG.appsScriptUrl + '?action=get_my_events&userId=' + currentUser.userId + '&token=' + sessionStorage.getItem('rh_token');
                     const result = await response.json();
                     if (result.status === 'success' && result.events) {
                         // Count recently reviewed events (approved/rejected in last 24h could be a notification)
@@ -2492,7 +2496,7 @@
                 const response = await fetch(CONFIG.appsScriptUrl, {
                     method: 'POST', headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
-                        action: 'submitSession', mode: 'scout-only', sessionId: sessionState.sessionId,
+                        action: 'submitSession', token: sessionStorage.getItem('rh_token'), mode: 'scout-only', sessionId: sessionState.sessionId,
                         userId: currentUser.userId, volunteerName: currentUser.handle, organization: currentUser.organization,
                         gpsPoints: sessionState.gpsPoints,
                         startLat: sessionState.gpsPoints[0].lat, startLon: sessionState.gpsPoints[0].lon,
@@ -2700,7 +2704,7 @@
                 const response = await fetch(CONFIG.appsScriptUrl, {
                     method: 'POST', headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
-                        action: 'submitSession', mode: 'collection', sessionId: sessionState.sessionId,
+                        action: 'submitSession', token: sessionStorage.getItem('rh_token'), mode: 'collection', sessionId: sessionState.sessionId,
                         userId: currentUser.userId, volunteerName: currentUser.handle, organization: currentUser.organization,
                         gpsPoints: sessionState.gpsPoints,
                         startLat: sessionState.gpsPoints[0]?.lat, startLon: sessionState.gpsPoints[0]?.lon,
@@ -2862,7 +2866,7 @@
                 await fetch(CONFIG.appsScriptUrl, {
                     method: 'POST', headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
-                        action: 'updateProfile', userId: currentUser.userId,
+                        action: 'updateProfile', token: sessionStorage.getItem('rh_token'), userId: currentUser.userId,
                         organization: org, addresses: currentUser.addresses
                     })
                 });
@@ -2951,7 +2955,7 @@
                 await fetch(CONFIG.appsScriptUrl, {
                     method: 'POST', headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
-                        action: 'submitHousehold', userId: currentUser.userId,
+                        action: 'submitHousehold', token: sessionStorage.getItem('rh_token'), userId: currentUser.userId,
                         materialType: materialDesc,
                         weightLbs: parseFloat(document.getElementById('hrWeight').value),
                         dateBagged: document.getElementById('hrDateBagged').value,
@@ -3053,7 +3057,7 @@
             list.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 30px;">Loading...</div>';
 
             try {
-                const response = await fetch(CONFIG.appsScriptUrl + '?action=get_my_events&userId=' + currentUser.userId);
+                const response = await fetch(CONFIG.appsScriptUrl + '?action=get_my_events&userId=' + currentUser.userId + '&token=' + sessionStorage.getItem('rh_token'));
                 const result = await response.json();
 
                 if (result.status !== 'success') {
@@ -3103,7 +3107,7 @@
         async function showEventDetail(eventId) {
             // Fetch event details
             try {
-                const response = await fetch(CONFIG.appsScriptUrl + '?action=get_my_events&userId=' + currentUser.userId);
+                const response = await fetch(CONFIG.appsScriptUrl + '?action=get_my_events&userId=' + currentUser.userId + '&token=' + sessionStorage.getItem('rh_token'));
                 const result = await response.json();
                 
                 if (result.status !== 'success') {
@@ -3216,7 +3220,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
-                        action: 'proposeEvent',
+                        action: 'proposeEvent', token: sessionStorage.getItem('rh_token'),
                         userId: currentUser.userId,
                         coordinatorName: currentUser.handle,
                         organization,
@@ -3258,7 +3262,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
-                        action: 'postEventUpdate',
+                        action: 'postEventUpdate', token: sessionStorage.getItem('rh_token'),
                         userId: currentUser.userId,
                         eventId: currentEventData.eventId,
                         message: message
@@ -3290,7 +3294,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
-                        action: 'cancelEvent',
+                        action: 'cancelEvent', token: sessionStorage.getItem('rh_token'),
                         userId: currentUser.userId,
                         eventId: currentEventData.eventId,
                         reason: reason.trim()
@@ -3354,7 +3358,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
-                        action: 'updateEventSupplies',
+                        action: 'updateEventSupplies', token: sessionStorage.getItem('rh_token'),
                         userId: currentUser.userId,
                         eventId: currentEventData.eventId,
                         supplies: currentSupplies
