@@ -133,60 +133,55 @@
 
         <div class="content">
             <!-- ==================== LOGIN SCREEN ==================== -->
+            <!-- ==================== LOGIN SCREEN ==================== -->
             <div id="loginScreen">
-                <div class="instructions" style="margin-bottom: 20px;">
-                    <strong>Welcome to CHIMERA!</strong><br>
-                    Log in or create a profile to start tracking.
-                </div>
 
-                <!-- PRE-LOGIN ACTIVITY FEED -->
-                <div class="activity-feed" id="preLoginFeed">
-                    <div class="feed-header">
-                        <div class="feed-title"><span>📊</span> Recent Activity</div>
+                <!-- LOGIN FORM (compact) -->
+                <div class="login-card login-compact" id="loginForm">
+                    <div class="login-compact-header">
+                        <strong>🌍 Welcome to CHIMERA!</strong>
+                        <div class="login-sub">Log in or create a profile to start tracking.</div>
                     </div>
-                    <div class="feed-scroll" id="preLoginFeedScroll">
-                        <div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 20px;">Loading activity...</div>
-                    </div>
-                </div>
-
-                <!-- LOGIN FORM -->
-                <div class="login-card" id="loginForm">
-                    <h3>🔑 Log In</h3>
-                    <div class="login-sub">Enter your handle and PIN</div>
-                    <div class="form-group">
-                        <label class="form-label">Handle</label>
-                        <input type="text" class="form-input" id="loginHandle" placeholder="Your handle (not your real name)" autocomplete="off">
-                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Use the handle you created, not your real name</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">PIN</label>
-                        <div class="pin-input-wrapper">
-                            <input type="password" class="form-input" id="loginPIN" placeholder="e.g. jb07" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
-                            <span class="pin-toggle" onclick="togglePIN('loginPIN', this)">👁️</span>
+                    <div class="login-fields-row">
+                        <div class="form-group login-field-handle">
+                            <label class="form-label">Handle</label>
+                            <input type="text" class="form-input" id="loginHandle" placeholder="Your handle" autocomplete="off">
+                        </div>
+                        <div class="form-group login-field-pin">
+                            <label class="form-label">PIN</label>
+                            <div class="pin-input-wrapper">
+                                <input type="password" class="form-input" id="loginPIN" placeholder="jb07" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
+                                <span class="pin-toggle" onclick="togglePIN('loginPIN', this)">👁️</span>
+                            </div>
                         </div>
                     </div>
                     <button class="btn btn-primary" id="loginBtn" disabled>Log In</button>
-                    <div style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 8px;">Forgot your PIN? Contact your organization lead.</div>
-                    <div class="login-toggle" id="showCreateToggle">New here? Create a profile →</div>
+                    <div class="login-compact-footer">
+                        <span class="login-help-text">Forgot PIN? Ask your org lead.</span>
+                        <span class="login-toggle" id="showCreateToggle">New here? Create profile →</span>
+                    </div>
                 </div>
 
-                <!-- CREATE PROFILE FORM -->
-                <div class="login-card hidden" id="createForm">
-                    <h3>📝 Create Profile</h3>
-                    <div class="login-sub">Choose a handle and PIN you'll remember</div>
-                    <div class="form-group">
-                        <label class="form-label">Choose a Handle</label>
-                        <input type="text" class="form-input" id="createHandle" placeholder="Pick a nickname (not your real name)" autocomplete="off">
-                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">⚠️ This will be visible to others. Don't use your real name.</div>
+                <!-- CREATE PROFILE FORM (compact) -->
+                <div class="login-card login-compact hidden" id="createForm">
+                    <div class="login-compact-header">
+                        <strong>📝 Create Profile</strong>
+                        <div class="login-sub">Choose a handle and PIN you'll remember.</div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">PIN (2 letters + 2 numbers)</label>
-                        <div class="pin-input-wrapper">
-                            <input type="password" class="form-input" id="createPIN" placeholder="e.g. jb07" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
-                            <span class="pin-toggle" onclick="togglePIN('createPIN', this)">👁️</span>
+                    <div class="login-fields-row">
+                        <div class="form-group login-field-handle">
+                            <label class="form-label">Handle</label>
+                            <input type="text" class="form-input" id="createHandle" placeholder="Pick a nickname" autocomplete="off">
                         </div>
-                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Format: two letters + two numbers (e.g. km23)</div>
+                        <div class="form-group login-field-pin">
+                            <label class="form-label">PIN</label>
+                            <div class="pin-input-wrapper">
+                                <input type="password" class="form-input" id="createPIN" placeholder="jb07" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
+                                <span class="pin-toggle" onclick="togglePIN('createPIN', this)">👁️</span>
+                            </div>
+                        </div>
                     </div>
+                    <div class="create-profile-hint">⚠️ Handle is public — don't use your real name. PIN = 2 letters + 2 numbers.</div>
                     <div class="form-group">
                         <label class="form-label">Organization</label>
                         <select class="form-select" id="createOrgSelect">
@@ -203,10 +198,22 @@
                     <div class="form-group">
                         <label class="form-label">Email (Optional)</label>
                         <input type="email" class="form-input" id="createEmail" placeholder="For event notifications only" autocomplete="off">
-                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">🔒 Never shared publicly. Used only for event notifications if you opt in.</div>
+                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">🔒 Never shared. Event notifications only.</div>
                     </div>
                     <button class="btn btn-primary" id="createProfileBtn" disabled>Create Profile</button>
-                    <div class="login-toggle" id="showLoginToggle">Already have a profile? Log in →</div>
+                    <div class="login-compact-footer">
+                        <span class="login-toggle" id="showLoginToggle">Already have a profile? Log in →</span>
+                    </div>
+                </div>
+
+                <!-- PRE-LOGIN ACTIVITY FEED (hero) -->
+                <div class="activity-feed" id="preLoginFeed">
+                    <div class="feed-header">
+                        <div class="feed-title"><span>📊</span> Recent Activity</div>
+                    </div>
+                    <div class="feed-scroll" id="preLoginFeedScroll">
+                        <div style="text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 20px;">Loading activity...</div>
+                    </div>
                 </div>
             </div>
 
