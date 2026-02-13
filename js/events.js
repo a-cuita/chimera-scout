@@ -1,5 +1,15 @@
 // events.js — Coordinator event management, proposals, supplies, upcoming events
-
+function getTimezoneAbbr(tz) {
+    var abbrs = {
+        'America/New_York': 'ET',
+        'America/Chicago': 'CT',
+        'America/Denver': 'MT',
+        'America/Los_Angeles': 'PT',
+        'America/Anchorage': 'AKT',
+        'Pacific/Honolulu': 'HT'
+    };
+    return abbrs[tz] || tz || 'CT';
+}
 // ==================== COORDINATOR STATUS ====================
 
 function checkCoordinatorStatus() {
@@ -139,6 +149,7 @@ function showProposeEventScreen() {
     document.getElementById('eventContactName').value = '';
     document.getElementById('eventContactPhone').value = '';
     document.getElementById('eventContactEmail').value = '';
+    document.getElementById('eventTimezoneInput').value = 'America/Chicago';
     const publicNo = document.getElementById('eventPublicNo');
     if (publicNo) publicNo.checked = true;
 }
@@ -228,7 +239,7 @@ async function loadUpcomingEvents() {
         let html = '';
         events.forEach(event => {
             const dateStr = event.eventDate ? new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'TBD';
-            const timeStr = event.startTime ? formatTime12Hour(event.startTime) : '';
+            const timeStr = event.startTime ? formatTime12Hour(event.startTime) + ' ' + getTimezoneAbbr(event.timezone) : '';
 
             html += `<div style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-radius: 12px; padding: 14px; margin-bottom: 10px; border: 1px solid #bbf7d0;">
                 <div style="font-weight: 600; color: #166534;">${event.title}</div>
@@ -360,6 +371,7 @@ function initEvents() {
                     userId: currentUser.userId, coordinatorName: currentUser.handle, organization, title, eventDate,
                     startTime: document.getElementById('eventStartTimeInput').value,
                     endTime: document.getElementById('eventEndTimeInput').value,
+                    timezone: document.getElementById('eventTimezoneInput').value,
                     locationName,
                     locationAddress: document.getElementById('eventAddressInput').value.trim(),
                     description: document.getElementById('eventDescriptionInput').value.trim(),
