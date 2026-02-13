@@ -550,12 +550,21 @@ async function loadAdminPendingEvents() {
 
         list.innerHTML = events.map(ev => {
             const dateStr = ev.eventDate ? new Date(ev.eventDate).toLocaleDateString() : 'No date';
+            const publicToggle = ev.requestPublic
+                ? `<div style="margin:8px 0; padding:8px; background:#eff6ff; border-radius:6px; font-size:12px;">
+                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#1e40af;">
+                       <input type="checkbox" id="approvePublic_${ev.eventId}" checked>
+                       🌐 Coordinator requested public visibility — approve?
+                     </label>
+                   </div>`
+                : '';
             return `<div class="admin-event-card">
                 <div class="admin-event-title">${escapeHtml(ev.title)}</div>
                 <div class="admin-event-meta">
                     ${escapeHtml(ev.coordinatorName)} · ${dateStr} · ${ev.locationName || 'No location'}
                 </div>
                 ${ev.description ? '<div style="font-size:12px; color:#6b7280; margin-top:6px;">' + escapeHtml(ev.description.substring(0, 120)) + '</div>' : ''}
+                ${publicToggle}
                 <div class="admin-event-actions">
                     <button class="admin-action-btn primary" onclick="reviewEvent('${ev.eventId}', 'approved')">Approve</button>
                     <button class="admin-action-btn danger" onclick="reviewEvent('${ev.eventId}', 'rejected')">Reject</button>
@@ -582,7 +591,8 @@ async function reviewEvent(eventId, decision) {
                 token: token,
                 eventId: eventId,
                 decision: decision,
-                reviewedBy: currentUser?.handle || 'admin'
+                reviewedBy: currentUser?.handle || 'admin',
+                approvePublic: document.getElementById('approvePublic_' + eventId)?.checked || false
             })
         });
         const result = await response.json();
