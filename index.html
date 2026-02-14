@@ -147,16 +147,16 @@
                             <input type="text" class="form-input" id="loginHandle" placeholder="Your handle" autocomplete="off">
                         </div>
                         <div class="form-group login-field-pin">
-                            <label class="form-label">PIN</label>
+                            <label class="form-label">Password</label>
                             <div class="pin-input-wrapper">
-                                <input type="password" class="form-input" id="loginPIN" placeholder="jb07" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
-                                <span class="pin-toggle" onclick="togglePIN('loginPIN', this)">👁️</span>
+                                <input type="password" class="form-input" id="loginPassword" placeholder="Enter password" autocomplete="off">
+                                <span class="pin-toggle" onclick="togglePIN('loginPassword', this)">👁️</span>
                             </div>
                         </div>
                     </div>
                     <button class="btn btn-primary" id="loginBtn" disabled>Log In</button>
                     <div class="login-compact-footer">
-                        <span class="login-help-text">Forgot PIN? Ask your org lead.</span>
+                        <span class="login-help-text">Forgot password? Ask your org lead.</span>
                         <span class="login-toggle" id="showCreateToggle">New here? Create profile →</span>
                     </div>
                 </div>
@@ -165,7 +165,7 @@
                 <div class="login-card login-compact hidden" id="createForm">
                     <div class="login-compact-header">
                         <strong>📝 Create Profile</strong>
-                        <div class="login-sub">Choose a handle and PIN you'll remember.</div>
+                        <div class="login-sub">Choose a handle and password you'll remember.</div>
                     </div>
                     <div class="login-fields-row">
                         <div class="form-group login-field-handle">
@@ -173,14 +173,14 @@
                             <input type="text" class="form-input" id="createHandle" placeholder="Pick a nickname" autocomplete="off">
                         </div>
                         <div class="form-group login-field-pin">
-                            <label class="form-label">PIN</label>
+                            <label class="form-label">Password</label>
                             <div class="pin-input-wrapper">
-                                <input type="password" class="form-input" id="createPIN" placeholder="jb07" maxlength="4" autocomplete="off" style="text-transform: lowercase;">
-                                <span class="pin-toggle" onclick="togglePIN('createPIN', this)">👁️</span>
+                                <input type="password" class="form-input" id="createPassword" placeholder="8+ chars" autocomplete="off">
+                                <span class="pin-toggle" onclick="togglePIN('createPassword', this)">👁️</span>
                             </div>
                         </div>
                     </div>
-                    <div class="create-profile-hint">⚠️ Handle is public — don't use your real name. PIN = 2 letters + 2 numbers.</div>
+                    <div class="create-profile-hint">⚠️ Handle is public — don't use your real name. Password must be 8+ characters.</div>
                     <div class="form-group">
                         <label class="form-label">Organization</label>
                         <select class="form-select" id="createOrgSelect">
@@ -853,6 +853,37 @@
             <div class="modal-footer">
                 <button class="btn btn-primary" id="saveNewAddress">Save Address</button>
                 <button class="btn btn-secondary" id="cancelNewAddress">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PASSWORD UPGRADE MODAL ==================== -->
+    <div class="feedback-overlay" id="passwordUpgradeOverlay">
+        <div class="feedback-modal">
+            <div class="feedback-modal-header">
+                <h3>🔒 Security Upgrade</h3>
+            </div>
+            <div class="feedback-modal-body">
+                <div style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">
+                    We've upgraded our security. Please set a new password (minimum 8 characters) to replace your old PIN.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <div class="pin-input-wrapper">
+                        <input type="password" class="form-input" id="upgradeNewPassword" placeholder="8+ characters" autocomplete="off">
+                        <span class="pin-toggle" onclick="togglePIN('upgradeNewPassword', this)">👁️</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <div class="pin-input-wrapper">
+                        <input type="password" class="form-input" id="upgradeConfirmPassword" placeholder="Re-enter password" autocomplete="off">
+                        <span class="pin-toggle" onclick="togglePIN('upgradeConfirmPassword', this)">👁️</span>
+                    </div>
+                </div>
+                <div id="upgradePasswordError" style="font-size: 12px; color: #dc2626; min-height: 18px; margin-bottom: 8px;"></div>
+                <button class="feedback-submit-btn" id="upgradePasswordBtn" disabled>Set New Password</button>
+                <button class="btn btn-secondary" id="upgradeSkipBtn" style="width: 100%; margin-top: 8px;">Remind Me Later</button>
             </div>
         </div>
     </div>
