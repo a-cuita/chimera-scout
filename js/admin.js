@@ -893,30 +893,6 @@ async function loadDynamicContent() {
     }
 }
 
-// Override showWikiTopic to use dynamic content
-var _originalShowWikiTopic = typeof showWikiTopic === 'function' ? showWikiTopic : null;
-
-function showWikiTopic(topic) {
-    // Try dynamic content first
-    if (window._wikiContent && window._wikiContent[topic]) {
-        var titles = {
-            cpue: '📊 What is √CPUE?',
-            zones: '🗺️ Montgomery Zones',
-            validation: '✓ Scout Validation',
-            safety: '⚠️ Safety Guidelines',
-            privacy: '🔒 Privacy & Data'
-        };
-        document.getElementById('wikiTopicTitle').textContent = titles[topic] || topic;
-        document.getElementById('wikiTopicContent').innerHTML = window._wikiContent[topic];
-        document.getElementById('wikiTopicModal').classList.add('show');
-        return;
-    }
-
-    // Fall back to original if exists
-    if (_originalShowWikiTopic) {
-        _originalShowWikiTopic(topic);
-    }
-}
 // ==================== ZONE MANAGER (Leaflet Draw) ====================
 
 let zoneMap = null;
