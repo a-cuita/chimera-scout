@@ -182,7 +182,16 @@ function showAdminScreen() {
     loadAdminUserOverrides();
     loadAdminContentEditors();
 }
-
+// Show zone manager for coordinator+
+    const role = sessionStorage.getItem('rh_role');
+    const zoneSection = document.getElementById('zoneManagerSection');
+    if (zoneSection) {
+        zoneSection.style.display = (role === 'admin' || role === 'coordinator' || role === 'public_admin') ? 'block' : 'none';
+    }
+// Init zone map when section is visible
+    if (role === 'admin' || role === 'coordinator' || role === 'public_admin') {
+        setTimeout(initZoneManager, 500);
+    }
 function toggleAdminSection(headerEl) {
     headerEl.classList.toggle('collapsed');
     const body = headerEl.nextElementSibling;
