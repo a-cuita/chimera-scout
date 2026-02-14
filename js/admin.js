@@ -881,13 +881,36 @@ async function loadDynamicContent() {
 
         // Wiki topics — store for showWikiTopic()
         window._wikiContent = {};
-        const wikiKeys = ['wiki_cpue', 'wiki_zones', 'wiki_validation', 'wiki_safety', 'wiki_privacy'];
+        window._wikiMeta = {};
+        var wikiKeys = ['wiki_cpue', 'wiki_zones', 'wiki_validation', 'wiki_safety', 'wiki_privacy'];
         wikiKeys.forEach(function(key) {
-            if (content[key] && content[key].html) {
+            if (content[key]) {
                 var topic = key.replace('wiki_', '');
-                window._wikiContent[topic] = content[key].html;
+                if (content[key].html) window._wikiContent[topic] = content[key].html;
+                window._wikiMeta[topic] = {
+                    title: content[key].title || '',
+                    subtitle: content[key].subtitle || ''
+                };
             }
         });
+
+        // Rebuild wiki index if we have metadata
+        var wikiContainer = document.querySelector('#wikiModal .modal-content');
+        if (wikiContainer && Object.keys(window._wikiMeta).length > 0) {
+            var indexHtml = '<p style="color: #6b7280; font-style: italic;">A growing knowledge base for CHIMERA volunteers.</p>';
+            wikiKeys.forEach(function(key) {
+                var topic = key.replace('wiki_', '');
+                var meta = window._wikiMeta[topic];
+                var defaultTitles = { cpue: '📊 What is √CPUE?', zones: '🗺️ Montgomery Zones', validation: '✓ Scout Validation', safety: '⚠️ Safety Guidelines', privacy: '🔒 Privacy & Data' };
+                var defaultSubs = { cpue: 'Understanding the efficiency metric', zones: 'How collection zones work', validation: 'How ratings get verified', safety: 'Stay safe while collecting', privacy: 'What we collect and why' };
+                var title = meta.title || defaultTitles[topic] || topic;
+                var subtitle = meta.subtitle || defaultSubs[topic] || '';
+                indexHtml += '<div style="margin: 16px 0; padding: 12px; background: #f9fafb; border-radius: 8px; cursor: pointer;" onclick="showWikiTopic(\'' + topic + '\')">' +
+                    '<strong>' + title + '</strong>' +
+                    '<div style="font-size: 12px; color: #6b7280;">' + subtitle + '</div></div>';
+            });
+            wikiContainer.innerHTML = indexHtml;
+        }
     } catch (error) {
         console.error('Dynamic content load error:', error);
     }
