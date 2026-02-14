@@ -743,6 +743,106 @@
         <div id="adminOverridesList"></div>
     </div>
 </div>
+                <!-- Content Editors -->
+<div class="admin-section">
+    <div class="admin-section-header" onclick="toggleAdminSection(this)">
+        <span>Content Editors</span>
+        <span class="admin-section-toggle">▼</span>
+    </div>
+    <div class="admin-section-body collapsed">
+        <!-- Getting Started -->
+        <div style="margin-bottom:16px;">
+            <div style="font-weight:600; font-size:13px; color:#374151; margin-bottom:4px;">💡 Getting Started</div>
+            <textarea id="adminContentGettingStarted" rows="8" style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:8px; font-size:12px; font-family:monospace; resize:vertical;"></textarea>
+            <button onclick="saveAdminContent('getting_started', 'adminContentGettingStarted')" style="margin-top:4px; padding:4px 12px; background:#2D5F3F; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Save</button>
+        </div>
+
+        <!-- Safety/Legal -->
+        <div style="margin-bottom:16px;">
+            <div style="font-weight:600; font-size:13px; color:#374151; margin-bottom:4px;">⚠️ Safety & Legal</div>
+            <textarea id="adminContentSafetyLegal" rows="8" style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:8px; font-size:12px; font-family:monospace; resize:vertical;"></textarea>
+            <button onclick="saveAdminContent('safety_legal', 'adminContentSafetyLegal')" style="margin-top:4px; padding:4px 12px; background:#2D5F3F; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Save</button>
+        </div>
+
+        <!-- Wiki Topics -->
+        <div style="font-weight:700; font-size:13px; color:#1f2937; margin:12px 0 8px; border-top:1px solid #e5e7eb; padding-top:12px;">📚 Wiki Topics</div>
+
+        <div style="margin-bottom:12px;">
+            <div style="font-weight:600; font-size:12px; color:#6b7280; margin-bottom:4px;">📊 What is √CPUE?</div>
+            <textarea id="adminContentWikiCpue" rows="5" style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:8px; font-size:12px; font-family:monospace; resize:vertical;"></textarea>
+            <button onclick="saveAdminContent('wiki_cpue', 'adminContentWikiCpue')" style="margin-top:4px; padding:4px 12px; background:#2D5F3F; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Save</button>
+        </div>
+
+        <div style="margin-bottom:12px;">
+            <div style="font-weight:600; font-size:12px; color:#6b7280; margin-bottom:4px;">🗺️ Montgomery Zones</div>
+            <textarea id="adminContentWikiZones" rows="5" style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:8px; font-size:12px; font-family:monospace; resize:vertical;"></textarea>
+            <button onclick="saveAdminContent('wiki_zones', 'adminContentWikiZones')" style="margin-top:4px; padding:4px 12px; background:#2D5F3F; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Save</button>
+        </div>
+
+        <div style="margin-bottom:12px;">
+            <div style="font-weight:600; font-size:12px; color:#6b7280; margin-bottom:4px;">✓ Scout Validation</div>
+            <textarea id="adminContentWikiValidation" rows="5" style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:8px; font-size:12px; font-family:monospace; resize:vertical;"></textarea>
+            <button onclick="saveAdminContent('wiki_validation', 'adminContentWikiValidation')" style="margin-top:4px; padding:4px 12px; background:#2D5F3F; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Save</button>
+        </div>
+
+        <div style="margin-bottom:12px;">
+            <div style="font-weight:600; font-size:12px; color:#6b7280; margin-bottom:4px;">⚠️ Safety Guidelines</div>
+            <textarea id="adminContentWikiSafety" rows="5" style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:8px; font-size:12px; font-family:monospace; resize:vertical;"></textarea>
+            <button onclick="saveAdminContent('wiki_safety', 'adminContentWikiSafety')" style="margin-top:4px; padding:4px 12px; background:#2D5F3F; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Save</button>
+        </div>
+
+        <div style="margin-bottom:12px;">
+            <div style="font-weight:600; font-size:12px; color:#6b7280; margin-bottom:4px;">🔒 Privacy & Data</div>
+            <textarea id="adminContentWikiPrivacy" rows="5" style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:8px; font-size:12px; font-family:monospace; resize:vertical;"></textarea>
+            <button onclick="saveAdminContent('wiki_privacy', 'adminContentWikiPrivacy')" style="margin-top:4px; padding:4px 12px; background:#2D5F3F; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Save</button>
+        </div>
+
+        <div style="font-size:11px; color:#9ca3af; font-style:italic; margin-top:8px;">Content supports HTML. Changes appear for all users on next page load.</div>
+    </div>
+</div>
+                <!-- Zone Manager -->
+<div class="admin-section" id="zoneManagerSection">
+    <div class="admin-section-header" onclick="toggleAdminSection(this)">
+        <span>🗺️ Zone Manager</span>
+        <span class="admin-section-toggle">▼</span>
+    </div>
+    <div class="admin-section-body collapsed">
+        <div style="font-size:12px; color:#6b7280; margin-bottom:8px;">Draw polygons on the map to create zones. Click existing zones to edit.</div>
+        <div id="zoneMapContainer" style="width:100%; height:350px; border-radius:8px; border:1px solid #d1d5db; margin-bottom:10px; background:#eee;"></div>
+
+        <!-- Zone List -->
+        <div style="margin-bottom:10px;">
+            <div style="font-weight:600; font-size:12px; color:#374151; margin-bottom:6px;">Existing Zones</div>
+            <div id="zoneListItems"><div style="color:#9ca3af; text-align:center; font-size:13px; padding:10px;">Loading...</div></div>
+        </div>
+
+        <!-- Zone Editor Panel (hidden until drawing/editing) -->
+        <div id="zoneEditorPanel" style="display:none; padding:12px; background:#f9fafb; border-radius:8px; margin-bottom:10px;">
+            <div style="font-weight:600; font-size:13px; color:#374151; margin-bottom:8px;" id="zoneEditorTitle">New Zone</div>
+            <div style="margin-bottom:8px;">
+                <label style="font-size:12px; color:#6b7280;">Name</label>
+                <input type="text" id="zoneNameInput" placeholder="e.g. Garden District" style="width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:6px; font-size:13px;">
+            </div>
+            <div style="margin-bottom:8px;">
+                <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:#6b7280; cursor:pointer;">
+                    <input type="checkbox" id="zoneActiveToggle" checked> Active
+                </label>
+            </div>
+            <input type="hidden" id="zonePolygonData">
+            <div style="display:flex; gap:6px;">
+                <button onclick="saveZone()" style="padding:6px 14px; background:#2D5F3F; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Save Zone</button>
+                <button onclick="cancelZoneEdit()" style="padding:6px 14px; background:#6b7280; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Cancel</button>
+                <button onclick="deleteZone()" id="deleteZoneBtn" style="display:none; padding:6px 14px; background:#dc2626; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Delete</button>
+            </div>
+        </div>
+
+        <!-- Batch Operations -->
+        <div style="border-top:1px solid #e5e7eb; padding-top:10px; margin-top:10px;">
+            <button onclick="recalculateAllZones()" id="recalcZonesBtn" style="padding:6px 14px; background:#6b7280; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">Recalculate All Session Zones</button>
+            <div style="font-size:11px; color:#9ca3af; margin-top:4px;">Run after editing zones to update existing session zone assignments.</div>
+        </div>
+    </div>
+</div>
             </div>
 
         </div><!-- end .content -->
