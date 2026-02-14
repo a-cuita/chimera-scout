@@ -90,6 +90,8 @@ function showMainScreen() {
     checkSunSchedule();
     checkCoordinatorStatus();
     checkNotifications();
+    loadAdminContentEditors();
+    
 
     // Hunt Integration: Check query params and redirect if needed
     const urlParams = new URLSearchParams(window.location.search);
